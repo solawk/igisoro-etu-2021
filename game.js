@@ -22,7 +22,7 @@ const borderImage = new LoadingImage("images/border.png");
 
 // Sizing stuff
 const screenSize = Math.max(screen.width, screen.height);
-const canvasW = screenSize / 2;
+const canvasW = screenSize * (2 / 3);
 const canvasH = canvasW * (9 / 16);
 canvas.width = canvasW;
 canvas.height = canvasH;
