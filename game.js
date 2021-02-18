@@ -21,7 +21,7 @@ const pitImage = new LoadingImage("images/pitImage.png");
 const borderImage = new LoadingImage("images/border.png");
 
 // Sizing stuff
-const screenSize = Math.max(screen.width, screen.height);
+const screenSize = Math.max(window.innerWidth, window.innerHeight);
 const canvasW = screenSize * (2 / 3);
 const canvasH = canvasW * (9 / 16);
 canvas.width = canvasW;
