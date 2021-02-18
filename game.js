@@ -11,7 +11,7 @@ function LoadingImage(src)
     {
         this.loaded = true;
         console.log(src + " loaded");
-        Redraw();
+        LoadingUpdate();
     }.bind(this), false);
     this.image.src = src;
 }
@@ -19,6 +19,8 @@ function LoadingImage(src)
 const woodenBack = new LoadingImage("images/woodenBack.png");
 const pitImage = new LoadingImage("images/pitImage.png");
 const borderImage = new LoadingImage("images/border.png");
+
+let resourcesLoaded = false;
 
 // Sizing stuff
 const screenSize = Math.max(window.innerWidth, window.innerHeight);
@@ -78,6 +80,19 @@ function ClickHandler(event)
     ctx.fillText("X: " + event.offsetX + " Y: " + event.offsetY, 30, 70);
 }
 
+function LoadingUpdate()
+{
+    resourcesLoaded =
+        woodenBack.loaded &&
+        pitImage.loaded &&
+        borderImage.loaded;
+
+    if (resourcesLoaded)
+    {
+        Redraw();
+    }
+}
+
 function Redraw()
 {
     if (woodenBack.loaded) ctx.drawImage(woodenBack.image, 0, 0);
@@ -97,3 +112,11 @@ for (let i = 0; i < 16; i++)
     Pits.push(new Pit(false, i));
     Pits.push(new Pit(true, i));
 }
+
+ctx.beginPath();
+ctx.rect(0, 0, canvasW, canvasH);
+ctx.fillStyle = "rgba(0, 0, 0, 1)";
+ctx.fill();
+ctx.closePath();
+ctx.fillStyle = "rgba(255, 255, 255, 1)";
+ctx.fillText("Loading resources", canvasW / 2, canvasH / 2);
