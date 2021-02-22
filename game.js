@@ -1,122 +1,330 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-// Image loading utils
-function LoadingImage(src)
+function nullRedraw()
 {
-    this.loaded = false;
+    console.log("Redraw not handled warning!");
+}
 
-    this.image = new Image();
-    this.image.addEventListener("load", function()
+export let Data =
     {
-        this.loaded = true;
-        console.log(src + " loaded");
-        LoadingUpdate();
-    }.bind(this), false);
-    this.image.src = src;
-}
+        topOccupations: [],
+        bottomOccupations: [],
+        handOccupation: 0,
+        state: "idle",
+        turn: "idle",
+        pit: -1,
+        stepTime: 300,
+        redrawRoutine: nullRedraw
+    }
 
-const woodenBack = new LoadingImage("images/woodenBack.png");
-const pitImage = new LoadingImage("images/pitImage.png");
-const borderImage = new LoadingImage("images/border.png");
-
-let resourcesLoaded = false;
-
-// Sizing stuff
-const screenSize = Math.max(window.innerWidth, window.innerHeight);
-const canvasW = screenSize * (2 / 3);
-const canvasH = canvasW * (9 / 16);
-canvas.width = canvasW;
-canvas.height = canvasH;
-
-const pitSize = canvasH / 5;
-
-const pitGap = pitSize / 10;
-const pitBorderOffset = pitSize / 4;
-
-function Pit(bottomSide, index)
+export function Start(side, stepTime, redrawRoutine)
 {
-    this.bottomSide = bottomSide;
-    this.index = index;
-}
+    Data.topOccupations = [];
+    Data.bottomOccupations = [];
 
-Pit.prototype.getCenterX = function()
-{
-    let indexX = this.index < 8 ? this.index : 15 - this.index; // 0-7 from left to right
-
-    let xFromCenter = indexX - 4; // -4 -3 -2 -1 1 2 3 4
-    if (xFromCenter >= 0) xFromCenter++;
-
-    let gapsCount = xFromCenter - 0.5 * Math.sign(xFromCenter);
-    let gapsTotalDistance = gapsCount * pitGap;
-
-    let pitsCount = xFromCenter - 0.5 * Math.sign(xFromCenter);
-    let pitsTotalDistance = pitsCount * pitSize;
-
-    return Math.floor(canvasW / 2 + gapsTotalDistance + pitsTotalDistance);
-}
-
-Pit.prototype.getCenterY = function()
-{
-    let row = this.index < 8 ? 0 : 1;
-
-    let afterOffset = pitSize * (0.5 + row) + pitGap * row;
-
-    let sideMultiplier = this.bottomSide ? 1 : -1;
-
-    return Math.floor(canvasH / 2 + sideMultiplier * (pitBorderOffset + afterOffset));
-}
-
-Pit.prototype.drawPit = function()
-{
-    if (pitImage.loaded) ctx.drawImage(pitImage.image, this.getCenterX() - pitSize / 2, this.getCenterY() - pitSize / 2, pitSize, pitSize);
-}
-
-canvas.onclick = ClickHandler;
-
-function ClickHandler(event)
-{
-    Redraw();
-    ctx.fillText("X: " + event.offsetX + " Y: " + event.offsetY, 30, 70);
-}
-
-function LoadingUpdate()
-{
-    resourcesLoaded =
-        woodenBack.loaded &&
-        pitImage.loaded &&
-        borderImage.loaded;
-
-    if (resourcesLoaded)
+    for (let i = 0; i < 8; i++)
     {
-        Redraw();
+        Data.topOccupations[i] = 4;
+        Data.bottomOccupations[i] = 4;
+
+        Data.topOccupations[i + 8] = 0;
+        Data.bottomOccupations[i + 8] = 0;
+    }
+
+    Data.state = "idle";
+    Data.turn = side;
+    Data.pit = -1;
+
+    Data.stepTime = stepTime;
+    Data.redrawRoutine = redrawRoutine;
+}
+
+export function CheckMove(side, index)
+{
+    if (side !== Data.turn)
+    {
+        return "wrongSide";
+    }
+
+    if (Data.state === "idle")
+    {
+        let pitOccupation;
+
+        if (side === "bottom")
+        {
+            pitOccupation = Data.bottomOccupations[index];
+        }
+        else
+        {
+            pitOccupation = Data.topOccupations[index];
+        }
+
+        if (pitOccupation < 2)
+        {
+            return "notEnough";
+        }
+
+        SetToGrab(index);
+        MakeStep();
+        return "grabOk";
+    }
+
+    if (Data.state === "reversibleIdle")
+    {
+        let reverseIndexes = GetReverseIndexes(Data.pit);
+
+        if (index === reverseIndexes[0])
+        {
+            return "reverseOk";
+        }
+
+        if (index === reverseIndexes[1])
+        {
+            return "grabOk";
+        }
+    }
+
+    return "inProgress";
+}
+
+function GetReverseIndexes(index) // Get the indexes of pits that will contain the reverse choice arrows
+{
+    if (index === 1)
+    {
+        return [0, 2];
+    }
+
+    if (index === 6)
+    {
+        return [5, 7];
+    }
+
+    if (index === 8)
+    {
+        return [7, 9];
+    }
+
+    if (index === 15)
+    {
+        return [14, 0];
     }
 }
 
-function Redraw()
+function GetOpposingIndexes(index)
 {
-    if (woodenBack.loaded) ctx.drawImage(woodenBack.image, 0, 0);
-    for (let i = 0; i < Pits.length; i++)
+    return [7 - index, 8 + index];
+}
+
+function GetOccupation(side, index) // Get a pit's or the hand's occupation
+{
+    if (side === "bottom")
     {
-        Pits[i].drawPit();
+        return Data.bottomOccupations[index];
     }
-    if (borderImage.loaded) ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
 
-    console.log("Redraw");
+    if (side === "top")
+    {
+        return Data.topOccupations[index];
+    }
+
+    if (side === "hand")
+    {
+        return Data.handOccupation;
+    }
 }
 
-let Pits = [];
-
-for (let i = 0; i < 16; i++)
+function SetOccupation(side, index, occupation) // Set a pit's or the hand's occupation
 {
-    Pits.push(new Pit(false, i));
-    Pits.push(new Pit(true, i));
+    if (side === "bottom")
+    {
+        Data.bottomOccupations[index] = occupation;
+    }
+
+    if (side === "top")
+    {
+        Data.topOccupations[index] = occupation;
+    }
+
+    if (side === "hand")
+    {
+        Data.handOccupation = occupation;
+    }
 }
 
-ctx.beginPath();
-ctx.rect(0, 0, canvasW, canvasH);
-ctx.fillStyle = "rgba(0, 0, 0, 1)";
-ctx.fill();
-ctx.closePath();
-ctx.fillStyle = "rgba(255, 255, 255, 1)";
-ctx.fillText("Loading resources", canvasW / 2, canvasH / 2);
+function IncOccupation(side, index) // Increase a pit's occupation by 1
+{
+    if (side === "bottom")
+    {
+        Data.bottomOccupations[index]++;
+    }
+
+    if (side === "top")
+    {
+        Data.topOccupations[index]++;
+    }
+}
+
+function DecOccupation(side, index) // Decrease the hand's occupation by 1
+{
+    if (side === "hand")
+    {
+        Data.handOccupation--;
+    }
+}
+
+function NextPit() // Select the next pit
+{
+    Data.pit++;
+    if (Data.pit > 15)
+    {
+        Data.pit = 0;
+    }
+}
+
+function SetToGrab(index) // Set the step state to grabbing from the indexed pit
+{
+    Data.pit = index;
+    Data.state = "grab";
+}
+
+function SetToReverseGrab(index) // Set the step state to grabbing from the indexed pit before reversing
+{
+    Data.pit = index;
+    Data.state = "reverseGrab";
+}
+
+function GetOtherSide() // Get the opposing side' string
+{
+    if (Data.turn === "top")
+    {
+        return "bottom";
+    }
+    else
+    {
+        return "top";
+    }
+}
+
+function PrepareNextStep() // Start waiting for the next step
+{
+    setTimeout(function()
+    {
+        MakeStep()
+    }, Data.stepTime);
+}
+
+function EndTurn() // Ready the turn for the other side
+{
+    Data.state = "idle";
+    Data.pit = -1;
+
+    if (Data.turn === "top")
+    {
+        Data.turn = "bottom";
+    }
+    else
+    {
+        Data.turn = "top";
+    }
+}
+
+function MakeStep() // Making the step
+{
+    switch (Data.state)
+    {
+        case "grab":
+        {
+            let pitOccupation = GetOccupation(Data.turn, Data.pit);
+
+            SetOccupation("hand", 0, pitOccupation);
+            SetOccupation(Data.turn, Data.pit, 0);
+
+            Data.redrawRoutine();
+
+            Data.state = "put";
+
+            NextPit();
+
+            PrepareNextStep();
+
+            break;
+        }
+
+        case "put":
+        {
+            IncOccupation(Data.turn, Data.pit);
+            DecOccupation("hand", 0);
+
+            Data.redrawRoutine();
+
+            if (GetOccupation("hand", 0) === 0)
+            {
+                Data.state = "end";
+            }
+            else
+            {
+                NextPit();
+            }
+
+            PrepareNextStep();
+
+            break;
+        }
+
+        case "end":
+        {
+            if (CheckCapture())
+            {
+                Data.state = "capture";
+                PrepareNextStep();
+
+                break;
+            }
+
+            if (GetOccupation(Data.turn, Data.pit) > 1)
+            {
+                Data.state = "grab";
+                PrepareNextStep();
+            }
+            else
+            {
+                EndTurn();
+            }
+
+            Data.redrawRoutine();
+
+            break;
+        }
+
+        case "capture":
+        {
+            let opposings = GetOpposingIndexes(Data.pit);
+            let capturedAmount = GetOccupation(GetOtherSide(), opposings[0]) + GetOccupation(GetOtherSide(), opposings[1]);
+
+            SetOccupation(GetOtherSide(), opposings[0], 0);
+            SetOccupation(GetOtherSide(), opposings[1], 0);
+            SetOccupation("hand", 0, capturedAmount);
+
+            Data.redrawRoutine();
+
+            Data.state = "put";
+
+            NextPit();
+
+            PrepareNextStep();
+
+            break;
+        }
+    }
+}
+
+function CheckCapture(reverseLoops = 0, reverseBonus = 0)
+{
+    if (Data.pit > 7) return false; // Cannot capture from the outer row
+
+    let pitOccupation = GetOccupation(Data.turn, Data.pit);
+    if (pitOccupation < 2 - reverseBonus - reverseLoops) return false; // Cannot capture from an empty pit
+
+    let opposings = GetOpposingIndexes(Data.pit);
+    if (GetOccupation(GetOtherSide(), opposings[0]) === 0 || GetOccupation(GetOtherSide(), opposings[1]) === 0) return false; // Cannot capture empty pits
+
+    return true; // Otherwise we can capture
+}
