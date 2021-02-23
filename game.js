@@ -3,6 +3,11 @@ function nullRedraw()
     console.log("Redraw not handled warning!");
 }
 
+function nullTransfer()
+{
+    console.log("Transfer creation not handled warning!");
+}
+
 export let Data =
     {
         topOccupations: [],
@@ -12,10 +17,11 @@ export let Data =
         turn: "idle",
         pit: -1,
         stepTime: 300,
-        redrawRoutine: nullRedraw
+        redrawRoutine: nullRedraw,
+        transferRoutine: nullTransfer
     }
 
-export function Start(side, stepTime, redrawRoutine)
+export function Start(side, stepTime, redrawRoutine, transferRoutine)
 {
     Data.topOccupations = [];
     Data.bottomOccupations = [];
@@ -29,12 +35,15 @@ export function Start(side, stepTime, redrawRoutine)
         Data.bottomOccupations[i + 8] = 0;
     }
 
+    Data.handOccupation = 0;
+
     Data.state = "idle";
     Data.turn = side;
     Data.pit = -1;
 
     Data.stepTime = stepTime;
     Data.redrawRoutine = redrawRoutine;
+    Data.transferRoutine = transferRoutine;
 }
 
 export function CheckMove(side, index)
@@ -62,9 +71,17 @@ export function CheckMove(side, index)
             return "notEnough";
         }
 
-        SetToGrab(index);
-        MakeStep();
-        return "grabOk";
+        if (CheckReversible(side, index))
+        {
+            SetToReversibleIdle(index);
+            return "waitForReverse";
+        }
+        else
+        {
+            SetToGrab(index);
+            MakeStep();
+            return "grabOk";
+        }
     }
 
     if (Data.state === "reversibleIdle")
@@ -73,11 +90,15 @@ export function CheckMove(side, index)
 
         if (index === reverseIndexes[0])
         {
+            SetToReverseGrab(Data.pit);
+            MakeStep();
             return "reverseOk";
         }
 
         if (index === reverseIndexes[1])
         {
+            SetToGrab(Data.pit);
+            MakeStep();
             return "grabOk";
         }
     }
@@ -179,10 +200,25 @@ function NextPit() // Select the next pit
     }
 }
 
+function PrevPit() // Select the previous pit
+{
+    Data.pit--;
+    if (Data.pit < 0)
+    {
+        Data.pit = 15;
+    }
+}
+
 function SetToGrab(index) // Set the step state to grabbing from the indexed pit
 {
     Data.pit = index;
     Data.state = "grab";
+}
+
+function SetToReversibleIdle(index) // Set the step state to waiting for reverse (or not)
+{
+    Data.pit = index;
+    Data.state = "reversibleIdle";
 }
 
 function SetToReverseGrab(index) // Set the step state to grabbing from the indexed pit before reversing
@@ -237,6 +273,7 @@ function MakeStep() // Making the step
             SetOccupation("hand", 0, pitOccupation);
             SetOccupation(Data.turn, Data.pit, 0);
 
+            Data.transferRoutine(pitOccupation, Data.turn, Data.pit, "hand", 0);
             Data.redrawRoutine();
 
             Data.state = "put";
@@ -253,6 +290,7 @@ function MakeStep() // Making the step
             IncOccupation(Data.turn, Data.pit);
             DecOccupation("hand", 0);
 
+            Data.transferRoutine(1, "hand", 0, Data.turn, Data.pit);
             Data.redrawRoutine();
 
             if (GetOccupation("hand", 0) === 0)
@@ -275,6 +313,13 @@ function MakeStep() // Making the step
             {
                 Data.state = "capture";
                 PrepareNextStep();
+
+                break;
+            }
+
+            if (CheckReversible())
+            {
+                SetToReversibleIdle(Data.pit);
 
                 break;
             }
@@ -303,6 +348,8 @@ function MakeStep() // Making the step
             SetOccupation(GetOtherSide(), opposings[1], 0);
             SetOccupation("hand", 0, capturedAmount);
 
+            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[0]), GetOtherSide(), opposings[0], "hand", 0);
+            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[1]), GetOtherSide(), opposings[1], "hand", 0);
             Data.redrawRoutine();
 
             Data.state = "put";
@@ -313,18 +360,80 @@ function MakeStep() // Making the step
 
             break;
         }
+
+        case "reverseGrab":
+        {
+            let pitOccupation = GetOccupation(Data.turn, Data.pit);
+
+            SetOccupation("hand", 0, pitOccupation);
+            SetOccupation(Data.turn, Data.pit, 0);
+
+            Data.transferRoutine(pitOccupation, Data.turn, Data.pit, "hand", 0);
+            Data.redrawRoutine();
+
+            Data.state = "reversePut";
+
+            PrevPit();
+
+            PrepareNextStep();
+
+            break;
+        }
+
+        case "reversePut":
+        {
+            IncOccupation(Data.turn, Data.pit);
+            DecOccupation("hand", 0);
+
+            Data.transferRoutine(1, "hand", 0, Data.turn, Data.pit);
+            Data.redrawRoutine();
+
+            if (GetOccupation("hand", 0) === 0)
+            {
+                Data.state = "end";
+            }
+            else
+            {
+                PrevPit();
+            }
+
+            PrepareNextStep();
+
+            break;
+        }
     }
 }
 
-function CheckCapture(reverseLoops = 0, reverseBonus = 0)
+function CheckCapture(pit = Data.pit, reverseLoops = 0, reverseBonus = 0)
 {
-    if (Data.pit > 7) return false; // Cannot capture from the outer row
+    if (pit > 7) return false; // Cannot capture from the outer row
 
-    let pitOccupation = GetOccupation(Data.turn, Data.pit);
+    let pitOccupation = GetOccupation(Data.turn, pit);
     if (pitOccupation < 2 - reverseBonus - reverseLoops) return false; // Cannot capture from an empty pit
 
-    let opposings = GetOpposingIndexes(Data.pit);
+    let opposings = GetOpposingIndexes(pit);
     if (GetOccupation(GetOtherSide(), opposings[0]) === 0 || GetOccupation(GetOtherSide(), opposings[1]) === 0) return false; // Cannot capture empty pits
 
     return true; // Otherwise we can capture
+}
+
+function CheckReversible(side= Data.turn, index = Data.pit)
+{
+    if (index !== 1 && index !== 6 && index !== 8 && index !== 15) return false;
+
+    let pitOccupation = GetOccupation(side, index);
+
+    if (pitOccupation < 2) return false;
+
+    let loops = 0;
+    while (pitOccupation > 15)
+    {
+        pitOccupation -= 16;
+        loops++;
+    }
+
+    let indexWhereReverseEnds = index - pitOccupation;
+    if (indexWhereReverseEnds < 0) indexWhereReverseEnds += 16;
+
+    return CheckCapture(indexWhereReverseEnds, loops, 1);
 }
