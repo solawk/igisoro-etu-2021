@@ -16,6 +16,7 @@ export let Data =
         state: "idle",
         turn: "idle",
         pit: -1,
+        startPit: -1,
         stepTime: 300,
         redrawRoutine: nullRedraw,
         transferRoutine: nullTransfer
@@ -34,6 +35,19 @@ export function Start(side, stepTime, redrawRoutine, transferRoutine)
         Data.topOccupations[i + 8] = 0;
         Data.bottomOccupations[i + 8] = 0;
     }
+
+    // TEST
+    /*
+    for (let i = 0; i < 8; i++)
+    {
+        Data.topOccupations[i] = i;
+        Data.bottomOccupations[i] = i + 8;
+
+        Data.topOccupations[i + 8] = i + 16;
+        Data.bottomOccupations[i + 8] = i + 24;
+    }
+    */
+    // TEST
 
     Data.handOccupation = 0;
 
@@ -70,6 +84,8 @@ export function CheckMove(side, index)
         {
             return "notEnough";
         }
+
+        Data.startPit = index;
 
         if (CheckReversible(side, index))
         {
@@ -209,6 +225,11 @@ function PrevPit() // Select the previous pit
     }
 }
 
+function StartPit() // Select the starting pit
+{
+    Data.pit = Data.startPit;
+}
+
 function SetToGrab(index) // Set the step state to grabbing from the indexed pit
 {
     Data.pit = index;
@@ -344,16 +365,18 @@ function MakeStep() // Making the step
             let opposings = GetOpposingIndexes(Data.pit);
             let capturedAmount = GetOccupation(GetOtherSide(), opposings[0]) + GetOccupation(GetOtherSide(), opposings[1]);
 
+            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[0]), GetOtherSide(), opposings[0], "hand", 0);
+            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[1]), GetOtherSide(), opposings[1], "hand", 0);
+
             SetOccupation(GetOtherSide(), opposings[0], 0);
             SetOccupation(GetOtherSide(), opposings[1], 0);
             SetOccupation("hand", 0, capturedAmount);
 
-            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[0]), GetOtherSide(), opposings[0], "hand", 0);
-            Data.transferRoutine(GetOccupation(GetOtherSide(), opposings[1]), GetOtherSide(), opposings[1], "hand", 0);
             Data.redrawRoutine();
 
             Data.state = "put";
 
+            StartPit();
             NextPit();
 
             PrepareNextStep();

@@ -1,4 +1,5 @@
-import * as Game from './game.js'
+import * as Game from './game.js';
+import * as Bunches from './bunches.js';
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -29,16 +30,21 @@ const seedImage = new LoadingImage("images/seedSprite.png");
 let resourcesLoaded = false;
 
 // Sizing stuff
-const screenSize = Math.max(window.innerWidth, window.innerHeight);
-const canvasW = screenSize * (2 / 3);
+let canvasW = window.innerWidth * (9 / 10);
+if (canvasW * (9 / 16) > window.innerHeight * (9 / 10))
+{
+    canvasW = window.innerHeight * (16 / 10);
+}
 const canvasH = canvasW * (9 / 16);
 canvas.width = canvasW;
 canvas.height = canvasH;
 canvas.style.borderRadius = (canvasW / 50).toString() + "px";
-const occupationFontSize = Math.floor(screenSize / 53);
+const occupationFontSize = Math.floor(canvasW / 36);
 
 const handX = canvasW / 2; // WIP
 const handY = canvasH / 2; // WIP
+
+// PIT
 
 const pitSize = canvasH / 5;
 
@@ -49,6 +55,8 @@ function Pit(side, index)
 {
     this.side = side;
     this.index = index;
+
+    this.delayedSeeds = 0; // Seeds that are currently being transferred into the pit
 }
 
 Pit.prototype.getCenterX = function()
@@ -108,8 +116,10 @@ Pit.prototype.getOccupation = function()
 Pit.prototype.draw = function()
 {
     if (this.side !== "hand") this.drawPit();
-    this.drawOccupation();
-    DrawSeeds(this.getOccupation(), this.getCenterX(), this.getCenterY());
+
+    let occupation = this.getOccupation() - this.delayedSeeds;
+    this.drawOccupation(occupation);
+    DrawSeeds(occupation, this.getCenterX(), this.getCenterY());
 }
 
 Pit.prototype.drawPit = function()
@@ -117,10 +127,24 @@ Pit.prototype.drawPit = function()
     ctx.drawImage(pitImage.image, this.getCenterX() - pitSize / 2, this.getCenterY() - pitSize / 2, pitSize, pitSize);
 }
 
-Pit.prototype.drawOccupation = function()
+Pit.prototype.drawOccupation = function(occupation)
 {
-    ctx.font = "bold " + occupationFontSize + "px math";
-    ctx.fillText(this.getOccupation(), this.getCenterX() + (pitSize * (1 / 4)), this.getCenterY() - (pitSize * (1 / 4)));
+    if (occupation < 20)
+    {
+        ctx.font = "bold " + occupationFontSize + "px math";
+        ctx.fillText(occupation, this.getCenterX() + (pitSize * (1 / 4)), this.getCenterY() - (pitSize * (1 / 4)));
+    }
+    else
+    {
+        ctx.font = "bold " + (occupationFontSize * 2) + "px math";
+        ctx.fillText(occupation, this.getCenterX() - occupationFontSize, this.getCenterY() + (occupationFontSize / 1.5));
+    }
+}
+
+Pit.prototype.flushDelayedSeeds = function(count)
+{
+    this.delayedSeeds -= count;
+    Redraw();
 }
 
 function GetPit(side, index)
@@ -136,18 +160,21 @@ function GetPit(side, index)
     }
 }
 
+// TRANSFER
+
 const transferSpeed = 16;
 
 function Transfer(count, originSide, originIndex, destinationSide, destinationIndex)
 {
     this.count = count;
 
-    let destinationPit = GetPit(destinationSide, destinationIndex);
-    this.dX = destinationPit.getCenterX();
-    this.dY = destinationPit.getCenterY();
+    this.dPit = GetPit(destinationSide, destinationIndex); // Destination pit
+    this.dX = this.dPit.getCenterX();
+    this.dY = this.dPit.getCenterY();
+    this.dPit.delayedSeeds += this.count;
 
     this.intervalTime = transferSpeed;
-    this.steps = Math.floor(stepTime * (2 / 3) / this.intervalTime);
+    this.steps = Math.floor(stepTime * (1 / 2) / this.intervalTime);
 
     let originPit = GetPit(originSide, originIndex);
     this.x = originPit.getCenterX();
@@ -160,19 +187,21 @@ Transfer.prototype.step = function()
     this.stepsMade++;
     if (this.stepsMade === this.steps)
     {
+        this.dPit.flushDelayedSeeds(this.count);
+
         let thisIndex = Transfers.indexOf(this);
         Transfers.splice(thisIndex, 1);
     }
 
-    this.x += (this.dX - this.x) / 3;
-    this.y += (this.dY - this.y) / 3;
+    this.x += (this.dX - this.x) / 4;
+    this.y += (this.dY - this.y) / 4;
 
     Redraw();
 }
 
 Transfer.prototype.draw = function()
 {
-    DrawSeeds(1, this.x, this.y);
+    DrawSeeds(this.count, this.x, this.y);
 }
 
 function CreateTransfer(count, originSide, originIndex, destinationSide, destinationIndex)
@@ -205,23 +234,27 @@ function DrawSeeds(count, x, y)
 {
     if (count === 0) return;
 
-    ctx.drawImage(seedImage.image, x - 10, y - 10, 20, 20);
+    let positions = Bunches.positions(count);
+    let seedSize = (pitSize / 6) * Bunches.seedSize(count);
+
+    for (let i = 0; i < positions.length; i += 2)
+    {
+        let sx = positions[i] * seedSize;
+        let sy = -positions[i + 1] * seedSize;
+
+        ctx.drawImage(seedImage.image, x + sx - (seedSize / 2), y + sy - (seedSize / 2), seedSize, seedSize);
+    }
 }
 
 canvas.onclick = ClickHandler;
 
 function ClickHandler(event)
 {
-    Redraw();
-    ctx.font = "10px math";
-    ctx.fillText("X: " + event.offsetX + " Y: " + event.offsetY, 30, 70);
-
     for (let i = 0; i < Pits.length; i++)
     {
         if (Pits[i].isClicked(event.offsetX, event.offsetY))
         {
-            ctx.fillText("Clicked " + Pits[i].side + " №" + Pits[i].index, 30, 80);
-            ctx.fillText(Game.CheckMove(Pits[i].side, Pits[i].index), 30, 90);
+            Game.CheckMove(Pits[i].side, Pits[i].index);
         }
     }
 }
@@ -247,13 +280,15 @@ function DrawGameData()
     ctx.fillText("bottom: " + Game.Data.bottomOccupations, 30, 240);
     ctx.fillText("hand: " + Game.Data.handOccupation, 30, 250);
     ctx.fillText("turn: " + Game.Data.turn, 30, 260);
-    ctx.fillText("pit: " + Game.Data.pit, 30, 270);
-    ctx.fillText("state: " + Game.Data.state, 30, 280);
+    ctx.fillText("startPit: " + Game.Data.startPit, 30, 270);
+    ctx.fillText("pit: " + Game.Data.pit, 30, 280);
+    ctx.fillText("state: " + Game.Data.state, 30, 290);
 }
 
 function Redraw()
 {
     ctx.drawImage(woodenBack.image, 0, 0);
+    ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
 
     for (let i = 0; i < Pits.length; i++)
     {
@@ -270,9 +305,7 @@ function Redraw()
         }
     }
 
-    ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
-
-    DrawGameData();
+    //DrawGameData();
 }
 
 let Pits = [];
