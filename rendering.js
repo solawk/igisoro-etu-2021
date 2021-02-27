@@ -203,6 +203,7 @@ function LoadingImage(src)
         this.loaded = true;
         resLoadedAmount++;
         LoadingUpdate();
+        LoadingScreen();
     }.bind(this), false);
     this.image.src = src;
 }
