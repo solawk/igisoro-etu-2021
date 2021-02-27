@@ -1,55 +1,25 @@
 import * as Game from './game.js';
-import * as Bunches from './bunches.js';
+
+import {
+    Redraw,
+    pitImage,
+    canvasW,
+    canvasH,
+    pitSize,
+    occupationFontSize,
+    pitGap,
+    pitBorderOffset,
+    handX,
+    handY,
+    DrawSeeds
+} from './rendering.js';
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const stepTime = 300; // WIP
 
-// Image loading utils
-// Class that loads the src image and raises it's 'loaded' flag when it's loaded, launches LoadingUpdate
-function LoadingImage(src)
-{
-    this.loaded = false;
-
-    this.image = new Image();
-    this.image.addEventListener("load", function()
-    {
-        this.loaded = true;
-        console.log(src + " loaded");
-        LoadingUpdate();
-    }.bind(this), false);
-    this.image.src = src;
-}
-
-const woodenBack = new LoadingImage("images/woodenBack.png");
-const pitImage = new LoadingImage("images/pitImage.png");
-const borderImage = new LoadingImage("images/border.png");
-const seedImage = new LoadingImage("images/seedSprite.png");
-
-let resourcesLoaded = false;
-
-// Sizing stuff
-let canvasW = window.innerWidth * (9 / 10);
-if (canvasW * (9 / 16) > window.innerHeight * (9 / 10))
-{
-    canvasW = window.innerHeight * (16 / 10);
-}
-const canvasH = canvasW * (9 / 16);
-canvas.width = canvasW;
-canvas.height = canvasH;
-canvas.style.borderRadius = (canvasW / 50).toString() + "px";
-const occupationFontSize = Math.floor(canvasW / 36);
-
-const handX = canvasW / 2; // WIP
-const handY = canvasH / 2; // WIP
-
 // PIT
-
-const pitSize = canvasH / 5;
-
-const pitGap = pitSize / 10;
-const pitBorderOffset = pitSize / 4;
 
 function Pit(side, index)
 {
@@ -129,6 +99,8 @@ Pit.prototype.drawPit = function()
 
 Pit.prototype.drawOccupation = function(occupation)
 {
+    ctx.fillStyle = "rgba(255, 255, 255, 1)";
+
     if (occupation < 20)
     {
         ctx.font = "bold " + occupationFontSize + "px math";
@@ -144,10 +116,9 @@ Pit.prototype.drawOccupation = function(occupation)
 Pit.prototype.flushDelayedSeeds = function(count)
 {
     this.delayedSeeds -= count;
-    Redraw();
 }
 
-function GetPit(side, index)
+export function GetPit(side, index)
 {
     if (side === "hand") return Hand;
 
@@ -230,22 +201,6 @@ function MoveTransfers()
 
 setInterval(MoveTransfers, transferSpeed);
 
-function DrawSeeds(count, x, y)
-{
-    if (count === 0) return;
-
-    let positions = Bunches.positions(count);
-    let seedSize = (pitSize / 6) * Bunches.seedSize(count);
-
-    for (let i = 0; i < positions.length; i += 2)
-    {
-        let sx = positions[i] * seedSize;
-        let sy = -positions[i + 1] * seedSize;
-
-        ctx.drawImage(seedImage.image, x + sx - (seedSize / 2), y + sy - (seedSize / 2), seedSize, seedSize);
-    }
-}
-
 canvas.onclick = ClickHandler;
 
 function ClickHandler(event)
@@ -259,57 +214,8 @@ function ClickHandler(event)
     }
 }
 
-function LoadingUpdate()
-{
-    resourcesLoaded =
-        woodenBack.loaded &&
-        pitImage.loaded &&
-        borderImage.loaded &&
-        seedImage.loaded;
-
-    if (resourcesLoaded)
-    {
-        Redraw();
-    }
-}
-
-function DrawGameData()
-{
-    ctx.font = "10px math";
-    ctx.fillText("top: " + Game.Data.topOccupations, 30, 230);
-    ctx.fillText("bottom: " + Game.Data.bottomOccupations, 30, 240);
-    ctx.fillText("hand: " + Game.Data.handOccupation, 30, 250);
-    ctx.fillText("turn: " + Game.Data.turn, 30, 260);
-    ctx.fillText("startPit: " + Game.Data.startPit, 30, 270);
-    ctx.fillText("pit: " + Game.Data.pit, 30, 280);
-    ctx.fillText("state: " + Game.Data.state, 30, 290);
-}
-
-function Redraw()
-{
-    ctx.drawImage(woodenBack.image, 0, 0);
-    ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
-
-    for (let i = 0; i < Pits.length; i++)
-    {
-        Pits[i].draw();
-    }
-
-    Hand.draw();
-
-    for (let i = 0; i < Transfers.length; i++)
-    {
-        if (Transfers[i] != null)
-        {
-            Transfers[i].draw();
-        }
-    }
-
-    //DrawGameData();
-}
-
-let Pits = [];
-let Transfers = [];
+export let Pits = [];
+export let Transfers = [];
 
 for (let i = 0; i < 16; i++)
 {
@@ -317,28 +223,6 @@ for (let i = 0; i < 16; i++)
     Pits.push(new Pit("bottom", i));
 }
 
-let Hand = new Pit("hand", 0);
+export let Hand = new Pit("hand", 0);
 
 Game.Start("bottom", stepTime, Redraw, CreateTransfer);
-
-ctx.beginPath();
-ctx.rect(0, 0, canvasW, canvasH);
-ctx.fillStyle = "rgba(0, 0, 0, 1)";
-ctx.fill();
-ctx.closePath();
-ctx.fillStyle = "rgba(255, 255, 255, 1)";
-ctx.fillText("Loading resources", canvasW / 2, canvasH / 2);
-
-// Game
-let FieldBottom = [];
-let FieldTop = [];
-for (let i = 0; i < 8; i++)
-{
-    FieldBottom.push(4);
-    FieldTop.push(4);
-}
-for (let i = 0; i < 8; i++)
-{
-    FieldBottom.push(0);
-    FieldTop.push(0);
-}

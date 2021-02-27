@@ -1,31 +1,23 @@
-function nullRedraw()
-{
-    console.log("Redraw not handled warning!");
-}
+import {
+    SetReverse
+} from "./rendering.js";
 
-function nullTransfer()
-{
-    console.log("Transfer creation not handled warning!");
-}
+export let Data;
 
-export let Data =
-    {
+export function Start(side, stepTime, redrawRoutine, transferRoutine)
+{
+    Data = {
         topOccupations: [],
         bottomOccupations: [],
         handOccupation: 0,
         state: "idle",
-        turn: "idle",
+        turn: side,
         pit: -1,
         startPit: -1,
-        stepTime: 300,
-        redrawRoutine: nullRedraw,
-        transferRoutine: nullTransfer
-    }
-
-export function Start(side, stepTime, redrawRoutine, transferRoutine)
-{
-    Data.topOccupations = [];
-    Data.bottomOccupations = [];
+        stepTime: stepTime,
+        redrawRoutine: redrawRoutine,
+        transferRoutine: transferRoutine,
+    };
 
     for (let i = 0; i < 8; i++)
     {
@@ -40,24 +32,23 @@ export function Start(side, stepTime, redrawRoutine, transferRoutine)
     /*
     for (let i = 0; i < 8; i++)
     {
-        Data.topOccupations[i] = i;
-        Data.bottomOccupations[i] = i + 8;
+        Data.topOccupations[i] = 0;
+        Data.bottomOccupations[i] = 0;
 
-        Data.topOccupations[i + 8] = i + 16;
-        Data.bottomOccupations[i + 8] = i + 24;
+        Data.topOccupations[i + 8] = 0;
+        Data.bottomOccupations[i + 8] = 0;
     }
+
+    Data.topOccupations[1] = 15;
+    Data.topOccupations[6] = 4;
+    Data.topOccupations[8] = 6;
+    Data.topOccupations[15] = 13;
+
+    Data.topOccupations[2] = 1;
+    Data.bottomOccupations[5] = 1;
+    Data.bottomOccupations[10] = 1;
     */
     // TEST
-
-    Data.handOccupation = 0;
-
-    Data.state = "idle";
-    Data.turn = side;
-    Data.pit = -1;
-
-    Data.stepTime = stepTime;
-    Data.redrawRoutine = redrawRoutine;
-    Data.transferRoutine = transferRoutine;
 }
 
 export function CheckMove(side, index)
@@ -90,6 +81,7 @@ export function CheckMove(side, index)
         if (CheckReversible(side, index))
         {
             SetToReversibleIdle(index);
+            SetReverse(index);
             return "waitForReverse";
         }
         else
@@ -107,6 +99,7 @@ export function CheckMove(side, index)
         if (index === reverseIndexes[0])
         {
             SetToReverseGrab(Data.pit);
+            SetReverse(-1);
             MakeStep();
             return "reverseOk";
         }
@@ -114,6 +107,7 @@ export function CheckMove(side, index)
         if (index === reverseIndexes[1])
         {
             SetToGrab(Data.pit);
+            SetReverse(-1);
             MakeStep();
             return "grabOk";
         }
@@ -199,7 +193,7 @@ function IncOccupation(side, index) // Increase a pit's occupation by 1
     }
 }
 
-function DecOccupation(side, index) // Decrease the hand's occupation by 1
+function DecOccupation(side) // Decrease the hand's occupation by 1
 {
     if (side === "hand")
     {
@@ -281,6 +275,11 @@ function EndTurn() // Ready the turn for the other side
     {
         Data.turn = "top";
     }
+
+    if (CheckGameOver())
+    {
+        console.log("Game over for the " + Data.turn + "!");
+    }
 }
 
 function MakeStep() // Making the step
@@ -309,7 +308,7 @@ function MakeStep() // Making the step
         case "put":
         {
             IncOccupation(Data.turn, Data.pit);
-            DecOccupation("hand", 0);
+            DecOccupation("hand");
 
             Data.transferRoutine(1, "hand", 0, Data.turn, Data.pit);
             Data.redrawRoutine();
@@ -340,6 +339,7 @@ function MakeStep() // Making the step
 
             if (CheckReversible())
             {
+                SetReverse(Data.pit);
                 SetToReversibleIdle(Data.pit);
 
                 break;
@@ -459,4 +459,30 @@ function CheckReversible(side= Data.turn, index = Data.pit)
     if (indexWhereReverseEnds < 0) indexWhereReverseEnds += 16;
 
     return CheckCapture(indexWhereReverseEnds, loops, 1);
+}
+
+function CheckGameOver()
+{
+    if (Data.turn === "bottom")
+    {
+        for (let i = 0; i < 16; i++)
+        {
+            if (Data.bottomOccupations[i] > 1)
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        for (let i = 0; i < 16; i++)
+        {
+            if (Data.topOccupations[i] > 1)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
