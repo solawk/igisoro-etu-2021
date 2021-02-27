@@ -25,7 +25,7 @@ export let handY; // WIP
 AdjustCanvas();
 
 let resLoadedAmount = 0;
-const resAmount = 4;
+const resAmount = 5;
 
 LoadingScreen();
 
@@ -203,7 +203,6 @@ function LoadingImage(src)
         this.loaded = true;
         resLoadedAmount++;
         LoadingUpdate();
-        LoadingScreen();
     }.bind(this), false);
     this.image.src = src;
 }
@@ -227,6 +226,10 @@ function LoadingUpdate()
     if (resourcesLoaded)
     {
         Redraw();
+    }
+    else
+    {
+        LoadingScreen();
     }
 }
 
