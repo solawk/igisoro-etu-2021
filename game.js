@@ -162,24 +162,6 @@ export function SowPit(currentState) // Select the sowing pit
     currentState.pit = currentState.sowPit;
 }
 
-export function SetToGrab(currentState, index) // Set the step state to grabbing from the indexed pit
-{
-    currentState.pit = index;
-    currentState.state = "grab";
-}
-
-export function SetToReversibleIdle(currentState, index) // Set the step state to waiting for reverse (or not)
-{
-    currentState.pit = index;
-    currentState.state = "reversibleIdle";
-}
-
-export function SetToReverseGrab(currentState, index) // Set the step state to grabbing from the indexed pit before reversing
-{
-    currentState.pit = index;
-    currentState.state = "reverseGrab";
-}
-
 export function GetOtherSide(currentState) // Get the opposing side' string
 {
     if (currentState.turn === "top")
@@ -541,6 +523,7 @@ function actionEnd()
     }
 
     SetState("Idle");
+    Session.redrawRoutine();
 }
 
 export function CheckCapture(currentState, pit, reverseLoops = 0, reverseBonus = 0)

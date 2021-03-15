@@ -7,6 +7,7 @@ import {
     Transfers,
     GetPit
 } from './client.js';
+import {Game} from "./game.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -25,7 +26,7 @@ export let handY; // WIP
 AdjustCanvas();
 
 let resLoadedAmount = 0;
-const resAmount = 5;
+const resAmount = 6;
 
 LoadingScreen();
 
@@ -36,6 +37,8 @@ export function Redraw()
 
     ctx.drawImage(woodenBack.image, 0, 0);
     ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
+
+    DrawTurnIndicator(GameScript.Game.turn);
 
     for (let i = 0; i < Pits.length; i++)
     {
@@ -55,6 +58,22 @@ export function Redraw()
     DrawReverseArrows();
 
     //DrawGameData();
+}
+
+function DrawTurnIndicator(turn)
+{
+    if (turn === "bottom")
+    {
+        ctx.drawImage(turnIndicator.image, 0, canvasH * (1 - 1 / 32), canvasW, canvasH * (1 / 32));
+    }
+    else
+    {
+        ctx.rotate(Math.PI);
+
+        ctx.drawImage(turnIndicator.image, -canvasW, -canvasH * (1 / 32), canvasW, canvasH * (1 / 32));
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
 }
 
 export function DrawSeeds(count, x, y)
@@ -211,6 +230,7 @@ export const pitImage = new LoadingImage("images/pitImage.png");
 const borderImage = new LoadingImage("images/border.png");
 export const seedImage = new LoadingImage("images/seedSprite.png");
 const arrowImage = new LoadingImage("images/arrowImage.png");
+const turnIndicator = new LoadingImage("images/turnIndicator.png");
 
 let resourcesLoaded = false;
 
@@ -220,7 +240,8 @@ function LoadingUpdate()
         woodenBack.loaded &&
         pitImage.loaded &&
         borderImage.loaded &&
-        seedImage.loaded;
+        seedImage.loaded &&
+        turnIndicator.loaded;
 
     if (resourcesLoaded)
     {
