@@ -1,4 +1,4 @@
-import * as Game from './game.js';
+import * as GameScript from './game.js';
 
 import {
     Redraw,
@@ -13,6 +13,8 @@ import {
     handY,
     DrawSeeds
 } from './rendering.js';
+
+import * as AI from './ai.js'
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -71,15 +73,15 @@ Pit.prototype.getOccupation = function()
 {
     if (this.side === "bottom")
     {
-        return Game.Data.bottomOccupations[this.index];
+        return GameScript.Game.bottomOccupations[this.index];
     }
     else if (this.side === "top")
     {
-        return Game.Data.topOccupations[this.index];
+        return GameScript.Game.topOccupations[this.index];
     }
     else
     {
-        return Game.Data.handOccupation;
+        return GameScript.Game.handOccupation;
     }
 }
 
@@ -209,7 +211,8 @@ function ClickHandler(event)
     {
         if (Pits[i].isClicked(event.offsetX, event.offsetY))
         {
-            Game.CheckMove(Pits[i].side, Pits[i].index);
+            console.log("Clicked on a pit");
+            GameScript.CheckMove(Pits[i].side, Pits[i].index);
         }
     }
 }
@@ -225,4 +228,6 @@ for (let i = 0; i < 16; i++)
 
 export let Hand = new Pit("hand", 0);
 
-Game.Start("bottom", stepTime, Redraw, CreateTransfer);
+GameScript.Start("bottom", stepTime, Redraw, CreateTransfer);
+
+//AI.StartEvaluation(GameScript.Game);

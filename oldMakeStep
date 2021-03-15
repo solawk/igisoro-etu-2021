@@ -1,0 +1,144 @@
+        case "grab":
+        {
+            let pitOccupation = GetOccupation(State, State.turn, State.pit);
+
+            SetOccupation(State, "hand", 0, pitOccupation);
+            SetOccupation(State, State.turn, State.pit, 0);
+
+            Session.transferRoutine(pitOccupation, State.turn, State.pit, "hand", 0);
+            Session.redrawRoutine();
+
+            State.state = "put";
+
+            NextPit(State);
+
+            PrepareNextStep(State);
+
+            break;
+        }
+
+        case "put":
+        {
+            IncOccupation(State, State.turn, State.pit);
+            DecOccupation(State, "hand");
+
+            Session.transferRoutine(1, "hand", 0, State.turn, State.pit);
+            Session.redrawRoutine();
+
+            if (GetOccupation(State, "hand", 0) === 0)
+            {
+                State.state = "end";
+            }
+            else
+            {
+                NextPit(State);
+            }
+
+            PrepareNextStep(State);
+
+            break;
+        }
+
+        case "end":
+        {
+            if (CheckCapture(State, State.pit))
+            {
+                State.state = "capture";
+                PrepareNextStep(State);
+
+                break;
+            }
+
+            if (CheckReversible(State, State.turn, State.pit))
+            {
+                SetReverse(State.pit);
+                SetToReversibleIdle(State, State.pit);
+
+                break;
+            }
+
+            if (GetOccupation(State, State.turn, State.pit) > 1)
+            {
+                State.state = "grab";
+                PrepareNextStep(State);
+            }
+            else
+            {
+                EndTurn(State);
+
+                if (CheckGameOver(State))
+                {
+                    console.log("Game over for the " + State.turn + "!");
+                }
+            }
+
+            Session.redrawRoutine();
+
+            break;
+        }
+
+        case "capture":
+        {
+            let opposings = GetOpposingIndexes(State.pit);
+            let capturedAmount = GetOccupation(State, GetOtherSide(State), opposings[0])
+                + GetOccupation(State, GetOtherSide(State), opposings[1]);
+
+            Session.transferRoutine(GetOccupation(State, GetOtherSide(State), opposings[0]), GetOtherSide(State), opposings[0], "hand", 0);
+            Session.transferRoutine(GetOccupation(State, GetOtherSide(State), opposings[1]), GetOtherSide(State), opposings[1], "hand", 0);
+
+            SetOccupation(State, GetOtherSide(State), opposings[0], 0);
+            SetOccupation(State, GetOtherSide(State), opposings[1], 0);
+            SetOccupation(State, "hand", 0, capturedAmount);
+
+            Session.redrawRoutine();
+
+            State.state = "put";
+
+            StartPit(State);
+            NextPit(State);
+
+            PrepareNextStep(State);
+
+            break;
+        }
+
+        case "reverseGrab":
+        {
+            let pitOccupation = GetOccupation(State, State.turn, State.pit);
+
+            SetOccupation(State, "hand", 0, pitOccupation);
+            SetOccupation(State, State.turn, State.pit, 0);
+
+            Session.transferRoutine(pitOccupation, State.turn, State.pit, "hand", 0);
+            Session.redrawRoutine();
+
+            State.state = "reversePut";
+
+            PrevPit(State);
+
+            PrepareNextStep(State);
+
+            break;
+        }
+
+        case "reversePut":
+        {
+            IncOccupation(State, State.turn, State.pit);
+            DecOccupation(State, "hand", 0);
+
+            Session.transferRoutine(1, "hand", 0, State.turn, State.pit);
+            Session.redrawRoutine();
+
+            if (GetOccupation(State, "hand", 0) === 0)
+            {
+                State.state = "end";
+            }
+            else
+            {
+                PrevPit(State);
+            }
+
+            PrepareNextStep(State);
+
+            break;
+        }

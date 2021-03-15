@@ -1,4 +1,4 @@
-import * as Game from "./game.js";
+import * as GameScript from "./game.js";
 import * as Bunches from "./bunches.js";
 
 import {
@@ -76,13 +76,13 @@ export function DrawSeeds(count, x, y)
 function DrawGameData()
 {
     ctx.font = "10px math";
-    ctx.fillText("top: " + Game.Data.topOccupations, 30, 230);
-    ctx.fillText("bottom: " + Game.Data.bottomOccupations, 30, 240);
-    ctx.fillText("hand: " + Game.Data.handOccupation, 30, 250);
-    ctx.fillText("turn: " + Game.Data.turn, 30, 260);
-    ctx.fillText("startPit: " + Game.Data.startPit, 30, 270);
-    ctx.fillText("pit: " + Game.Data.pit, 30, 280);
-    ctx.fillText("state: " + Game.Data.state, 30, 290);
+    ctx.fillText("top: " + GameScript.Game.topOccupations, 30, 230);
+    ctx.fillText("bottom: " + GameScript.Game.bottomOccupations, 30, 240);
+    ctx.fillText("hand: " + GameScript.Game.handOccupation, 30, 250);
+    ctx.fillText("turn: " + GameScript.Game.turn, 30, 260);
+    ctx.fillText("startPit: " + GameScript.Game.startPit, 30, 270);
+    ctx.fillText("pit: " + GameScript.Game.pit, 30, 280);
+    ctx.fillText("state: " + GameScript.Game.state, 30, 290);
 }
 
 // Reverse arrows stuff
@@ -120,11 +120,10 @@ function DrawReverseArrows()
 {
     if (ReverseSource === -1) return;
 
-    let alpha = (ReverseStep / 20) * 0.65;
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = (ReverseStep / 20) * 0.65;
     let distanceFromSource = (pitSize + pitGap) * Math.pow(ReverseStep / 20, 1 / 4);
 
-    let sourcePit = GetPit(Game.Data.turn, ReverseSource);
+    let sourcePit = GetPit(GameScript.Game.turn, ReverseSource);
 
     switch(ReverseSource)
     {
@@ -161,7 +160,7 @@ function DrawSingleReverseArrow(src, d, angle)
 {
     ctx.translate(src.getCenterX(), src.getCenterY());
 
-    let rotation = Game.Data.turn === "bottom" ? angle : angle + 180;
+    let rotation = GameScript.Game.turn === "bottom" ? angle : angle + 180;
     ctx.rotate(rotation * Math.PI / 180);
 
     ctx.drawImage(arrowImage.image, -(pitSize / 4) + d, -(pitSize / 4), pitSize / 2, pitSize / 2);
