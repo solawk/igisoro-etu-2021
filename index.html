@@ -7,10 +7,148 @@
     <title>Igisoro</title>
 </head>
 <body>
+    <table id="inputTable">
+        <tr>
+            <td>
+                <input type="number" value="0" size="12" id="t15" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t14" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t13" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t12" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t11" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t10" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t9" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="t8" style="width:50px">
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="number" value="4" size="12" id="t0" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t1" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t2" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t3" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t4" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t5" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t6" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="t7" style="width:50px">
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="number" value="4" size="12" id="b7" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b6" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b5" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b4" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b3" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b2" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b1" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="4" size="12" id="b0" style="width:50px">
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="number" value="0" size="12" id="b8" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b9" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b10" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b11" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b12" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b13" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b14" style="width:50px">
+            </td>
+            <td>
+                <input type="number" value="0" size="12" id="b15" style="width:50px">
+            </td>
+        </tr>
+    </table>
+
+    <div class="fieldButtonsWrapper">
+        <input type="submit" value="Обычная доска" onclick="normal()">
+        <input type="submit" value="Пустая доска" onclick="empty()">
+    </div>
+    <br>
+
     <div id="canvasDiv">
         <canvas id="gameCanvas" width="640" height ="360"></canvas>
     </div>
-    <span style="color: #ffffff;">v.0.3 (16:55 15.03.2021)</span>
+    <span style="color: #ffffff;">v.0.4 (22:10 15.03.2021)</span>
 </body>
 <script type="module" src="client.js"></script>
+<script>
+    function normal()
+    {
+        for (let i = 0; i < 8; i++)
+        {
+            document.getElementById("t" + i).value = 4;
+            document.getElementById("b" + i).value = 4;
+
+            document.getElementById("t" + (i + 8)).value = 0;
+            document.getElementById("b" + (i + 8)).value = 0;
+        }
+    }
+
+    function empty()
+    {
+        for (let i = 0; i < 16; i++)
+        {
+            document.getElementById("t" + i).value = 0;
+            document.getElementById("b" + i).value = 0;
+        }
+    }
+</script>
 </html>

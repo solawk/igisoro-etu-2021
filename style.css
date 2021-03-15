@@ -3,6 +3,17 @@
     text-align: center;
 }
 
+#inputTable
+{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.fieldButtonsWrapper
+{
+    text-align: center;
+}
+
 #gameCanvas
 {
     border-radius: 25px;

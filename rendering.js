@@ -1,27 +1,26 @@
-import * as GameScript from "./game.js";
 import * as Bunches from "./bunches.js";
 
 import {
-    Pits,
-    Hand,
     Transfers,
-    GetPit
+    GetPit,
+    Game
 } from './client.js';
-import {Game} from "./game.js";
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-export let canvasW;
-export let canvasH;
-export let pitSize;
+export let CanvasSettings =
+    {
+        context: ctx,
+        canvasW: 0,
+        canvasH: 0,
 
-export let occupationFontSize;
-export let pitGap;
-export let pitBorderOffset;
+        pitSize: 0,
+        pitGap: 0,
+        pitBorderOffset: 0,
 
-export let handX; // WIP
-export let handY; // WIP
+        occupationFontSize: 0
+    };
 
 AdjustCanvas();
 
@@ -31,21 +30,27 @@ const resAmount = 6;
 LoadingScreen();
 
 // Core rendering function
-export function Redraw()
+export function Redraw(game = null)
 {
     AdjustCanvas();
 
     ctx.drawImage(woodenBack.image, 0, 0);
-    ctx.drawImage(borderImage.image, 0, (canvasH / 2) - (pitSize / 8), canvasW, pitSize / 4);
+    ctx.drawImage(borderImage.image, 0, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
+        CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
 
-    DrawTurnIndicator(GameScript.Game.turn);
-
-    for (let i = 0; i < Pits.length; i++)
+    if (game != null)
     {
-        Pits[i].draw();
-    }
+        DrawTurnIndicator(game.turn);
 
-    Hand.draw();
+        for (let i = 0; i < Game.Pits.length; i++)
+        {
+            Game.Pits[i].setDrawSettings(CanvasSettings);
+            Game.Pits[i].draw(DrawSeeds, pitImage);
+        }
+
+        Game.Hand.setDrawSettings(CanvasSettings);
+        Game.Hand.draw(DrawSeeds, pitImage);
+    }
 
     for (let i = 0; i < Transfers.length; i++)
     {
@@ -55,22 +60,34 @@ export function Redraw()
         }
     }
 
-    DrawReverseArrows();
+    if (game != null)
+    {
+        DrawReverseArrows(game);
+        //DrawGameData(game);
+    }
+    else
+    {
+        ctx.fillStyle = "rgba(255, 255, 255, 1)";
 
-    //DrawGameData();
+        ctx.font = "bold " + CanvasSettings.occupationFontSize + "px math";
+        ctx.fillText("Нажмите на поле, чтобы запустить игру",
+                CanvasSettings.canvasW / 4,CanvasSettings.canvasH / 2);
+    }
 }
 
 function DrawTurnIndicator(turn)
 {
     if (turn === "bottom")
     {
-        ctx.drawImage(turnIndicator.image, 0, canvasH * (1 - 1 / 32), canvasW, canvasH * (1 / 32));
+        ctx.drawImage(turnIndicator.image, 0, CanvasSettings.canvasH * (1 - 1 / 32),
+            CanvasSettings.canvasW, CanvasSettings.canvasH * (1 / 32));
     }
     else
     {
         ctx.rotate(Math.PI);
 
-        ctx.drawImage(turnIndicator.image, -canvasW, -canvasH * (1 / 32), canvasW, canvasH * (1 / 32));
+        ctx.drawImage(turnIndicator.image, -CanvasSettings.canvasW, -CanvasSettings.canvasH * (1 / 32),
+            CanvasSettings.canvasW, CanvasSettings.canvasH * (1 / 32));
 
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
@@ -81,7 +98,7 @@ export function DrawSeeds(count, x, y)
     if (count === 0) return;
 
     let positions = Bunches.positions(count);
-    let seedSize = (pitSize / 6) * Bunches.seedSize(count);
+    let seedSize = (CanvasSettings.pitSize / 6) * Bunches.seedSize(count);
 
     for (let i = 0; i < positions.length; i += 2)
     {
@@ -92,16 +109,16 @@ export function DrawSeeds(count, x, y)
     }
 }
 
-function DrawGameData()
+function DrawGameData(game)
 {
     ctx.font = "10px math";
-    ctx.fillText("top: " + GameScript.Game.topOccupations, 30, 230);
-    ctx.fillText("bottom: " + GameScript.Game.bottomOccupations, 30, 240);
-    ctx.fillText("hand: " + GameScript.Game.handOccupation, 30, 250);
-    ctx.fillText("turn: " + GameScript.Game.turn, 30, 260);
-    ctx.fillText("startPit: " + GameScript.Game.startPit, 30, 270);
-    ctx.fillText("pit: " + GameScript.Game.pit, 30, 280);
-    ctx.fillText("state: " + GameScript.Game.state, 30, 290);
+    ctx.fillText("top: " + game.topOccupations, 30, 230);
+    ctx.fillText("bottom: " + game.bottomOccupations, 30, 240);
+    ctx.fillText("hand: " + game.handOccupation, 30, 250);
+    ctx.fillText("turn: " + game.turn, 30, 260);
+    ctx.fillText("sowPit: " + game.sowPit, 30, 270);
+    ctx.fillText("pit: " + game.pit, 30, 280);
+    ctx.fillText("state: " + game.state, 30, 290);
 }
 
 // Reverse arrows stuff
@@ -132,41 +149,41 @@ function IncreaseReverse()
     {
         setTimeout(IncreaseReverse, ReverseStepTime);
     }
-    Redraw();
+    Redraw(Game);
 }
 
-function DrawReverseArrows()
+function DrawReverseArrows(game)
 {
     if (ReverseSource === -1) return;
 
     ctx.globalAlpha = (ReverseStep / 20) * 0.65;
-    let distanceFromSource = (pitSize + pitGap) * Math.pow(ReverseStep / 20, 1 / 4);
+    let distanceFromSource = (CanvasSettings.pitSize + CanvasSettings.pitGap) * Math.pow(ReverseStep / 20, 1 / 4);
 
-    let sourcePit = GetPit(GameScript.Game.turn, ReverseSource);
+    let sourcePit = GetPit(game.turn, ReverseSource);
 
     switch(ReverseSource)
     {
         case 1:
         case 6:
         {
-            DrawSingleReverseArrow(sourcePit, distanceFromSource,180);
-            DrawSingleReverseArrow(sourcePit, distanceFromSource, 0);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource,180);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 0);
 
             break;
         }
 
         case 8:
         {
-            DrawSingleReverseArrow(sourcePit, distanceFromSource, 270);
-            DrawSingleReverseArrow(sourcePit, distanceFromSource, 0);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 270);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 0);
 
             break;
         }
 
         case 15:
         {
-            DrawSingleReverseArrow(sourcePit, distanceFromSource, 270);
-            DrawSingleReverseArrow(sourcePit, distanceFromSource, 180);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 270);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 180);
 
             break;
         }
@@ -175,38 +192,37 @@ function DrawReverseArrows()
     ctx.globalAlpha = 1;
 }
 
-function DrawSingleReverseArrow(src, d, angle)
+function DrawSingleReverseArrow(game, src, d, angle)
 {
     ctx.translate(src.getCenterX(), src.getCenterY());
 
-    let rotation = GameScript.Game.turn === "bottom" ? angle : angle + 180;
+    let rotation = game.turn === "bottom" ? angle : angle + 180;
     ctx.rotate(rotation * Math.PI / 180);
 
-    ctx.drawImage(arrowImage.image, -(pitSize / 4) + d, -(pitSize / 4), pitSize / 2, pitSize / 2);
+    ctx.drawImage(arrowImage.image, -(CanvasSettings.pitSize / 4) + d, -(CanvasSettings.pitSize / 4),
+        CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 function AdjustCanvas()
 {
-    canvasW = window.innerWidth * (9 / 10);
-    if (canvasW * (9 / 16) > window.innerHeight * (9 / 10))
+    CanvasSettings.canvasW = window.innerWidth * (9 / 10);
+    if (CanvasSettings.canvasW * (9 / 16) > window.innerHeight * (9 / 10))
     {
-        canvasW = window.innerHeight * (16 / 10);
+        CanvasSettings.canvasW = window.innerHeight * (16 / 10);
     }
-    canvasH = canvasW * (9 / 16);
-    pitSize = canvasH / 5;
+    CanvasSettings.canvasW *= 0.8;// WIP
+    CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
+    CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
-    occupationFontSize = Math.floor(canvasW / 36);
-    pitGap = pitSize / 10;
-    pitBorderOffset = pitSize / 4;
+    CanvasSettings.occupationFontSize = Math.floor(CanvasSettings.canvasW / 36);
+    CanvasSettings.pitGap = CanvasSettings.pitSize / 10;
+    CanvasSettings.pitBorderOffset = CanvasSettings.pitSize / 4;
 
-    handX = canvasW / 2; // WIP
-    handY = canvasH / 2; // WIP
-
-    canvas.width = canvasW;
-    canvas.height = canvasH;
-    canvas.style.borderRadius = (canvasW / 50).toString() + "px";
+    canvas.width = CanvasSettings.canvasW;
+    canvas.height = CanvasSettings.canvasH;
+    canvas.style.borderRadius = (CanvasSettings.canvasW / 50).toString() + "px";
 }
 
 // Image loading utils
@@ -245,7 +261,7 @@ function LoadingUpdate()
 
     if (resourcesLoaded)
     {
-        Redraw();
+        Redraw(Game);
     }
     else
     {
@@ -256,10 +272,10 @@ function LoadingUpdate()
 function LoadingScreen()
 {
     ctx.beginPath();
-    ctx.rect(0, 0, canvasW, canvasH);
+    ctx.rect(0, 0, CanvasSettings.canvasW, CanvasSettings.canvasH);
     ctx.fillStyle = "rgba(0, 0, 0, 1)";
     ctx.fill();
     ctx.closePath();
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
-    ctx.fillText("Loading resources (" + resLoadedAmount + " of " + resAmount + ")", canvasW / 2, canvasH / 2);
+    ctx.fillText("Loading resources (" + resLoadedAmount + " of " + resAmount + ")", CanvasSettings.canvasW / 2, CanvasSettings.canvasH / 2);
 }
