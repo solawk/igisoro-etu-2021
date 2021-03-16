@@ -1,8 +1,6 @@
 import * as Bunches from "./bunches.js";
 
 import {
-    Transfers,
-    GetPit,
     Game
 } from './client.js';
 
@@ -50,18 +48,15 @@ export function Redraw(game = null)
 
         Game.Hand.setDrawSettings(CanvasSettings);
         Game.Hand.draw(DrawSeeds, pitImage);
-    }
 
-    for (let i = 0; i < Transfers.length; i++)
-    {
-        if (Transfers[i] != null)
+        for (let i = 0; i < Game.Transfers.length; i++)
         {
-            Transfers[i].draw();
+            if (Game.Transfers[i] != null)
+            {
+                Game.Transfers[i].draw(DrawSeeds);
+            }
         }
-    }
 
-    if (game != null)
-    {
         DrawReverseArrows(game);
         //DrawGameData(game);
     }
@@ -71,7 +66,7 @@ export function Redraw(game = null)
 
         ctx.font = "bold " + CanvasSettings.occupationFontSize + "px math";
         ctx.fillText("Нажмите на поле, чтобы запустить игру",
-                CanvasSettings.canvasW / 4,CanvasSettings.canvasH / 2);
+            CanvasSettings.canvasW / 4, CanvasSettings.canvasH / 2);
     }
 }
 
@@ -159,14 +154,14 @@ function DrawReverseArrows(game)
     ctx.globalAlpha = (ReverseStep / 20) * 0.65;
     let distanceFromSource = (CanvasSettings.pitSize + CanvasSettings.pitGap) * Math.pow(ReverseStep / 20, 1 / 4);
 
-    let sourcePit = GetPit(game.turn, ReverseSource);
+    let sourcePit = Game.GetPit(game.turn, ReverseSource);
 
-    switch(ReverseSource)
+    switch (ReverseSource)
     {
         case 1:
         case 6:
         {
-            DrawSingleReverseArrow(game, sourcePit, distanceFromSource,180);
+            DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 180);
             DrawSingleReverseArrow(game, sourcePit, distanceFromSource, 0);
 
             break;

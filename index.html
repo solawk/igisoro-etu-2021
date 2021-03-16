@@ -120,13 +120,14 @@
     <div class="fieldButtonsWrapper">
         <input type="submit" value="Обычная доска" onclick="normal()">
         <input type="submit" value="Пустая доска" onclick="empty()">
+        <span style="color: #ffffff;">Длительность хода: 100мс</span><input id="speedSlider" type="range" min="1" max="10" value="3"><span style="color: #ffffff;">1с</span>
     </div>
     <br>
 
     <div id="canvasDiv">
         <canvas id="gameCanvas" width="640" height ="360"></canvas>
     </div>
-    <span style="color: #ffffff;">v.0.4 (22:10 15.03.2021)</span>
+    <span style="color: #ffffff;">v.0.5 (20:05 16.03.2021)</span>
 </body>
 <script type="module" src="client.js"></script>
 <script>
