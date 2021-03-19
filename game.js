@@ -1,137 +1,13 @@
-import
+export function Start(side, stepTime, field, LogicConnector)
 {
-    Pit
-} from './pit.js'
-
-import
-{
-    Transfer
-} from "./transfer.js";
-
-export function Start(side, stepTime, redrawRoutine, reverseRoutine)
-{
-    return new Game(stepTime, redrawRoutine, reverseRoutine, side);
+    return new Game(side, stepTime, field, LogicConnector);
 }
 
-function Game(stepTime, redrawRoutine, reverseRoutine, side = "bottom")
+function Game(side, stepTime, field, Connector)
 {
-    this.topOccupations = [];
-    this.bottomOccupations = [];
-    this.handOccupation = 0;
-    this.state = "Idle";
-    this.turn = side;
-    this.pit = -1;
-    this.sowPit = -1;
+    this.Connector = Connector;
 
-    this.Session = {
-        stepTime: stepTime,
-        redrawRoutine: redrawRoutine,
-        reverseRoutine: reverseRoutine
-    };
-
-    this.handX = 500;
-    this.handY = 300;
-
-    // Pits setup
-    /*
-    for (let i = 0; i < 8; i++)
-    {
-        this.topOccupations[i] = 4;
-        this.bottomOccupations[i] = 4;
-
-        this.topOccupations[i + 8] = 0;
-        this.bottomOccupations[i + 8] = 0;
-    }*/
-
-    // Experimental setup
-
-    for (let i = 0; i < 16; i++)
-    {
-        this.topOccupations[i] = parseInt(document.getElementById("t" + i).value);
-        this.bottomOccupations[i] = parseInt(document.getElementById("b" + i).value);
-    }
-
-    // TEST
-    /*
-            for (let i = 0; i < 8; i++)
-            {
-                Game.topOccupations[i] = 0;
-                Game.bottomOccupations[i] = 0;
-
-                Game.topOccupations[i + 8] = 0;
-                Game.bottomOccupations[i + 8] = 0;
-            }
-
-            Game.bottomOccupations[0] = 2;
-            Game.bottomOccupations[2] = 1;
-            Game.bottomOccupations[6] = 1;
-
-            Game.topOccupations[5] = 3;
-            Game.topOccupations[10] = 3;
-            Game.topOccupations[4] = 1;
-            Game.topOccupations[11] = 1;
-            Game.topOccupations[3] = 2;
-            Game.topOccupations[12] = 1;
-    */
-    // TEST
-
-    // Game scene objects (to be repacked into another GameScene class for each client)
-
-    // Pits
-    this.Pits = [];
-    for (let i = 0; i < 16; i++)
-    {
-        this.Pits.push(new Pit(this, "top", i));
-        this.Pits.push(new Pit(this, "bottom", i));
-    }
-
-    this.Hand = new Pit(this, "hand", 0);
-
-    // Transfers
-    this.Transfers = [];
-
-    let me = this;
-    setInterval(function()
-    {
-        me.MoveTransfers();
-    }, 16);
-}
-
-Game.prototype.GetPit = function(side, index)
-{
-    if (side === "hand") return this.Hand;
-
-    for (let i = 0; i < this.Pits.length; i++)
-    {
-        if (this.Pits[i].side === side && this.Pits[i].index === index)
-        {
-            return this.Pits[i];
-        }
-    }
-}
-
-Game.prototype.CreateTransfer = function(count, originSide, originIndex, destinationSide, destinationIndex)
-{
-    this.Transfers.push(new Transfer(this, count, originSide, originIndex, destinationSide, destinationIndex));
-}
-
-Game.prototype.MoveTransfers = function()
-{
-    let needRedraw = false;
-
-    for (let i = 0; i < this.Transfers.length; i++)
-    {
-        if (this.Transfers[i] != null)
-        {
-            this.Transfers[i].step();
-            needRedraw = true;
-        }
-    }
-
-    if (needRedraw)
-    {
-        this.Session.redrawRoutine(this);
-    }
+    this.SetGame(field, side, stepTime);
 }
 
 Game.prototype.CheckMove = function(index, side)
@@ -147,7 +23,7 @@ Game.prototype.CheckMove = function(index, side)
 
 Game.prototype.DispatchMove = function(index, side, isDelayed)
 {
-    const delay = isDelayed ? this.Session.stepTime * 100 : 0;
+    const delay = isDelayed ? this.stepTime * 100 : 0;
 
     let me = this;
     setTimeout(function()
@@ -219,42 +95,25 @@ Game.prototype.SetOccupation = function(side, index, occupation) // Set a pit's 
     {
         this.handOccupation = occupation;
     }
+
+    this.Connector.OutputCallbacks.SetOccupation.call(this.Connector.Callers.GameScene, side, index, occupation);
 }
 
-Game.prototype.IncOccupation = function(side, index, amount) // Increase a pit's occupation
+Game.prototype.DeltaOccupation = function(side, index, amount) // Modify a pit's occupation by amount
 {
-    if (side === "bottom")
-    {
-        this.bottomOccupations[index] += amount;
-    }
-
-    if (side === "top")
-    {
-        this.topOccupations[index] += amount;
-    }
-
-    if (side === "hand")
-    {
-        this.handOccupation[index] += amount;
-    }
+    this.SetOccupation(side, index, this.GetOccupation(side, index) + amount);
 }
 
-Game.prototype.DecOccupation = function(side, index, amount) // Decrease a pit's occupation
+Game.prototype.CreateTransfer = function(count, oSide, oIndex, dSide, dIndex)
 {
-    if (side === "bottom")
-    {
-        this.bottomOccupations[index] += amount;
-    }
+    this.Connector.OutputCallbacks.AddTransfer.call(this.Connector.Callers.GameScene, count, oSide, oIndex, dSide, dIndex);
+}
 
-    if (side === "top")
-    {
-        this.topOccupations[index] += amount;
-    }
+Game.prototype.SwitchTurn = function()
+{
+    this.turn = this.GetOtherSide();
 
-    if (side === "hand")
-    {
-        this.handOccupation--;
-    }
+    this.Connector.OutputCallbacks.SetTurn.call(this.Connector.Callers.GameScene, this.turn);
 }
 
 Game.prototype.NextPit = function() // Select the next pit
@@ -286,7 +145,6 @@ Game.prototype.GetOtherSide = function() // Get the opposing side' string
 
 Game.prototype.SetState = function(newState)
 {
-    console.log("State set to " + newState)
     this.state = newState;
 }
 
@@ -361,14 +219,10 @@ Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
     }
 }
 
-Game.prototype.DrawCall = function()
-{
-    this.Session.redrawRoutine(this);
-}
-
 // Player is initiating a turn
 Game.prototype.actionIdle = function(clickedPit, clickedSide)
 {
+    console.log("CLICK on " + clickedPit);
     this.SetState("SideCheck");
 
     this.DispatchMove(clickedPit, clickedSide, false);
@@ -380,7 +234,7 @@ Game.prototype.actionSideCheck = function(clickedPit, clickedSide)
     if (clickedSide === this.turn)
     {
         // Side is correct
-        console.log("Side is correct");
+        console.log("SIDE ok");
 
         this.SetState("OccupationCheck");
         this.DispatchMove(clickedPit, clickedSide, false);
@@ -388,7 +242,7 @@ Game.prototype.actionSideCheck = function(clickedPit, clickedSide)
     else
     {
         // Side is incorrect
-        console.log("Side is incorrect: " + clickedSide + " vs " + this.turn + " now");
+        console.log("SIDE fail");
 
         this.SetState("Idle");
     }
@@ -411,7 +265,7 @@ Game.prototype.actionOccupationCheck = function(clickedPit, clickedSide)
     if (pitOccupation > 1)
     {
         // There are enough seeds to make a move
-        console.log("Enough seeds to make a move");
+        console.log("OCCUPATION ok");
 
         this.SetState("ReverseCheck");
         this.sowPit = clickedPit;
@@ -422,7 +276,7 @@ Game.prototype.actionOccupationCheck = function(clickedPit, clickedSide)
     else
     {
         // There aren't
-        console.log("Not enough seeds to make a move");
+        console.log("OCCUPATION fail");
 
         this.SetState("Idle");
     }
@@ -434,15 +288,15 @@ Game.prototype.actionReverseCheck = function()
     if (this.CheckReversible(this.turn, this.pit))
     {
         // We request an input for the possible reverse move
-        console.log("Reversible");
+        console.log("REVERSIBLE true");
 
         this.SetState("ReverseIdle");
-        this.Session.reverseRoutine(this.pit);
+        this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameScene, this.pit);
     }
     else
     {
         // Cannot reverse, hence doing a regular move
-        console.log("Not reversible");
+        console.log("REVERSIBLE false");
 
         this.SetState("Grab");
     }
@@ -456,8 +310,9 @@ Game.prototype.actionReverseIdle = function(clickedPit)
 
     if (clickedPit === reverseIndexes[0])
     {
+        console.log("REVERSE true");
         this.SetState("ReverseGrab");
-        this.Session.reverseRoutine(-1);
+        this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameScene, -1);
 
         this.sowPit = this.pit;
 
@@ -466,8 +321,9 @@ Game.prototype.actionReverseIdle = function(clickedPit)
 
     if (clickedPit === reverseIndexes[1])
     {
+        console.log("REVERSE false");
         this.SetState("Grab");
-        this.Session.reverseRoutine(-1);
+        this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameScene, -1);
 
         this.DispatchMove(null, null, false);
     }
@@ -477,14 +333,14 @@ Game.prototype.actionCaptureCheck = function()
 {
     if (this.CheckCapture(this.pit))
     {
-        console.log("Can capture");
+        console.log("CAPTURE true");
 
         this.SetState("Capture");
         this.DispatchMove(null, null, true);
     }
     else
     {
-        console.log("Cannot capture");
+        console.log("CAPTURE false");
 
         this.SetState("ReverseCheck");
         this.DispatchMove(null, null, false);
@@ -498,17 +354,17 @@ Game.prototype.actionCapture = function()
     let capturedFromSecond = this.GetOccupation(this.GetOtherSide(), opposings[1]);
     let capturedAmount = capturedFromFirst + capturedFromSecond;
 
-    console.log("Capturing " + capturedFromFirst + " from " + opposings[0] + " and " + capturedFromSecond + " from " + opposings[1]
+    console.log("CAPTURING " + capturedFromFirst + " from " + opposings[0] + " + " + capturedFromSecond + " from " + opposings[1]
         + " into " + this.sowPit);
 
     this.SetOccupation(this.GetOtherSide(), opposings[0], 0);
     this.SetOccupation(this.GetOtherSide(), opposings[1], 0);
-    this.IncOccupation(this.turn, this.sowPit, capturedAmount);
+    this.DeltaOccupation(this.turn, this.sowPit, capturedAmount);
 
     if (this.CheckReversible(this.turn, this.sowPit))
     {
         // Can reverse after capture
-        console.log("Can reverse after this capture");
+        console.log("REVERSIBLE AFTER CAPTURE true");
 
         this.CreateTransfer(capturedFromFirst, this.GetOtherSide(), opposings[0], this.turn, this.sowPit);
         this.CreateTransfer(capturedFromSecond, this.GetOtherSide(), opposings[1], this.turn, this.sowPit);
@@ -520,7 +376,7 @@ Game.prototype.actionCapture = function()
     else
     {
         // Cannot reverse after capture
-        console.log("Cannot reverse after this capture");
+        console.log("REVERSIBLE AFTER CAPTURE false");
 
         this.CreateTransfer(capturedFromFirst, this.GetOtherSide(), opposings[0], "hand", 0);
         this.CreateTransfer(capturedFromSecond, this.GetOtherSide(), opposings[1], "hand", 0);
@@ -534,12 +390,12 @@ Game.prototype.actionCapture = function()
         this.SetState("Put");
     }
 
-    this.DrawCall();
     this.DispatchMove(null, null, true);
 }
 
 Game.prototype.actionGrab = function(direction)
 {
+    console.log("GRAB from " + this.pit);
     this.sowPit = this.pit;
 
     let pitOccupation = this.GetOccupation(this.turn, this.pit);
@@ -548,7 +404,6 @@ Game.prototype.actionGrab = function(direction)
     this.SetOccupation(this.turn, this.pit, 0);
 
     this.CreateTransfer(pitOccupation, this.turn, this.pit, "hand", 0);
-    this.DrawCall();
 
     if (direction === "f")
     {
@@ -566,11 +421,12 @@ Game.prototype.actionGrab = function(direction)
 
 Game.prototype.actionPut = function(direction)
 {
-    this.IncOccupation(this.turn, this.pit, 1);
-    this.DecOccupation("hand", 0, 1);
+    console.log("PUT into " + this.pit);
+
+    this.DeltaOccupation(this.turn, this.pit, 1);
+    this.DeltaOccupation("hand", 0, -1);
 
     this.CreateTransfer(1, "hand", 0, this.turn, this.pit);
-    this.DrawCall();
 
     if (this.GetOccupation("hand", 0) === 0)
     {
@@ -593,13 +449,17 @@ Game.prototype.actionPut = function(direction)
 
 Game.prototype.actionPutEnd = function()
 {
+    console.log("PUT END in " + this.pit);
+
     if (this.GetOccupation(this.turn, this.pit) > 1)
     {
+        console.log("CAN CONTINUE true");
         this.SetState("CaptureCheck")
         this.DispatchMove(null, null, true);
     }
     else
     {
+        console.log("CAN CONTINUE false");
         this.SetState("End");
         this.DispatchMove(null, null, false);
     }
@@ -607,20 +467,13 @@ Game.prototype.actionPutEnd = function()
 
 Game.prototype.actionEnd = function()
 {
+    console.log("END");
     this.pit = -1;
     this.sowPit = -1;
 
-    if (this.turn === "top")
-    {
-        this.turn = "bottom";
-    }
-    else
-    {
-        this.turn = "top";
-    }
+    this.SwitchTurn();
 
     this.SetState("Idle");
-    this.DrawCall();
 }
 
 Game.prototype.CheckCapture = function(pit, reverseLoops = 0, reverseBonus = 0)
@@ -682,4 +535,29 @@ Game.prototype.CheckGameOver = function()
     }
 
     return true;
+}
+
+Game.prototype.SetGame = function(field, side, stepTime)
+{
+    this.topOccupations = [];
+    this.bottomOccupations = [];
+    this.handOccupation = 0;
+    this.state = "Idle";
+    this.turn = side;
+    this.pit = -1;
+    this.sowPit = -1;
+    this.stepTime = stepTime;
+
+    this.LoadPitOccupation(field);
+}
+
+Game.prototype.LoadPitOccupation = function(field)
+{
+    for (let i = 0; i < 16; i++)
+    {
+        this.topOccupations[i] = field.topOccupations[i];
+        this.bottomOccupations[i] = field.bottomOccupations[i];
+    }
+
+    this.hand = 0;
 }

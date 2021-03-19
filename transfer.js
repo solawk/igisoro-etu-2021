@@ -1,18 +1,18 @@
-export function Transfer(parentGame, count, originSide, originIndex, destinationSide, destinationIndex)
+export function Transfer(parent, count, originSide, originIndex, destinationSide, destinationIndex)
 {
-    this.parentGame = parentGame;
+    this.scene = parent;
 
     this.count = count;
 
-    this.dPit = this.parentGame.GetPit(destinationSide, destinationIndex); // Destination pit
+    this.dPit = this.scene.GetPit(destinationSide, destinationIndex); // Destination pit
     this.dX = this.dPit.getCenterX();
     this.dY = this.dPit.getCenterY();
     this.dPit.delayedSeeds += this.count;
 
     this.intervalTime = 16; // TO DO
-    this.steps = Math.floor(this.parentGame.Session.stepTime * 100 * (1 / 2) / this.intervalTime);
+    this.steps = Math.floor(this.scene.stepTime * 100 * (1 / 2) / this.intervalTime);
 
-    let originPit = this.parentGame.GetPit(originSide, originIndex);
+    let originPit = this.scene.GetPit(originSide, originIndex);
     this.x = originPit.getCenterX();
     this.y = originPit.getCenterY();
     this.stepsMade = 0;
@@ -24,9 +24,10 @@ Transfer.prototype.step = function()
     if (this.stepsMade === this.steps)
     {
         this.dPit.flushDelayedSeeds(this.count);
+        this.scene.Draw();
 
-        let thisIndex = this.parentGame.Transfers.indexOf(this);
-        this.parentGame.Transfers.splice(thisIndex, 1);
+        let thisIndex = this.scene.Transfers.indexOf(this);
+        this.scene.Transfers.splice(thisIndex, 1);
     }
 
     this.x += (this.dX - this.x) / 6;

@@ -1,23 +1,28 @@
-export function Pit(parentGame, side, index)
+import
 {
-    this.game = parentGame;
+    CanvasSettings,
+    Images
+} from "./rendering.js";
+
+import
+{
+    UI_Text
+} from "./ui/uiText.js";
+
+export function Pit(parent, side, index)
+{
+    this.scene = parent;
 
     this.side = side;
     this.index = index;
 
+    this.occupation = 0;
     this.delayedSeeds = 0; // Seeds that are currently being transferred into the pit
-
-    this.drawSettings = null;
-}
-
-Pit.prototype.setDrawSettings = function(CanvasSettings)
-{
-    this.drawSettings = CanvasSettings;
 }
 
 Pit.prototype.getCenterX = function()
 {
-    if (this.side === "hand") return this.game.handX;
+    if (this.side === "hand") return this.scene.handX;
 
     let indexX = this.index < 8 ? this.index : 15 - this.index; // 0-7 from left to right
 
@@ -27,82 +32,66 @@ Pit.prototype.getCenterX = function()
     if (xFromCenter >= 0) xFromCenter++;
 
     let gapsCount = xFromCenter - 0.5 * Math.sign(xFromCenter);
-    let gapsTotalDistance = gapsCount * this.drawSettings.pitGap;
+    let gapsTotalDistance = gapsCount * CanvasSettings.pitGap;
 
     let pitsCount = xFromCenter - 0.5 * Math.sign(xFromCenter);
-    let pitsTotalDistance = pitsCount * this.drawSettings.pitSize;
+    let pitsTotalDistance = pitsCount * CanvasSettings.pitSize;
 
-    return Math.floor(this.drawSettings.canvasW / 2 + (gapsTotalDistance + pitsTotalDistance) * sideMultiplier);
+    return Math.floor(CanvasSettings.canvasW / 2 + (gapsTotalDistance + pitsTotalDistance) * sideMultiplier);
 }
 
 Pit.prototype.getCenterY = function()
 {
-    if (this.side === "hand") return this.game.handY;
+    if (this.side === "hand") return this.scene.handY;
 
     let row = this.index < 8 ? 0 : 1;
 
-    let afterOffset = this.drawSettings.pitSize * (0.5 + row) + this.drawSettings.pitGap * row;
+    let afterOffset = CanvasSettings.pitSize * (0.5 + row) + CanvasSettings.pitGap * row;
 
     let sideMultiplier = this.side === "bottom" ? 1 : -1;
 
-    return Math.floor(this.drawSettings.canvasH / 2 + sideMultiplier * (this.drawSettings.pitBorderOffset + afterOffset));
+    return Math.floor(CanvasSettings.canvasH / 2 + sideMultiplier * (CanvasSettings.pitBorderOffset + afterOffset));
 }
 
 Pit.prototype.isClicked = function(x, y)
 {
-    return Math.sqrt(Math.pow(x - this.getCenterX(), 2) + Math.pow(y - this.getCenterY(), 2)) < (this.drawSettings.pitSize / 2);
+    return Math.sqrt(Math.pow(x - this.getCenterX(), 2) + Math.pow(y - this.getCenterY(), 2)) < (CanvasSettings.pitSize / 2);
+}
+
+Pit.prototype.setOccupation = function(occupation)
+{
+    this.occupation = occupation;
 }
 
 Pit.prototype.getOccupation = function()
 {
-    if (this.side === "bottom")
-    {
-        return this.game.bottomOccupations[this.index];
-    }
-    else if (this.side === "top")
-    {
-        return this.game.topOccupations[this.index];
-    }
-    else
-    {
-        return this.game.handOccupation;
-    }
+    return this.occupation;
 }
 
-Pit.prototype.draw = function(drawSeedsRoutine, pitImage)
+Pit.prototype.draw = function(drawSeedsRoutine)
 {
-    if (this.side !== "hand") this.drawPit(pitImage);
+    if (this.side !== "hand") this.drawPit();
 
     let occupation = this.getOccupation() - this.delayedSeeds;
     this.drawOccupation(occupation);
     drawSeedsRoutine(occupation, this.getCenterX(), this.getCenterY());
 }
 
-Pit.prototype.drawPit = function(pitImage)
+Pit.prototype.drawPit = function()
 {
-    this.drawSettings.context.drawImage(pitImage.image,
-        this.getCenterX() - this.drawSettings.pitSize / 2, this.getCenterY() - this.drawSettings.pitSize / 2,
-        this.drawSettings.pitSize, this.drawSettings.pitSize);
+    CanvasSettings.context.drawImage(Images.get("pit").image,
+        this.getCenterX() - CanvasSettings.pitSize / 2, this.getCenterY() - CanvasSettings.pitSize / 2,
+        CanvasSettings.pitSize, CanvasSettings.pitSize);
 }
 
 Pit.prototype.drawOccupation = function(occupation)
 {
-    this.drawSettings.context.fillStyle = "rgba(255, 255, 255, 1)";
+    const OccupationText = new UI_Text(occupation,
+        this.getCenterX() + (CanvasSettings.pitSize * (1 / 4)),
+        this.getCenterY() - (CanvasSettings.pitSize * (1 / 4)),
+        CanvasSettings.occupationFontSize);
 
-    if (occupation < 20)
-    {
-        this.drawSettings.context.font = "bold " + this.drawSettings.occupationFontSize + "px math";
-        this.drawSettings.context.fillText(occupation,
-            this.getCenterX() + (this.drawSettings.pitSize * (1 / 4)),
-            this.getCenterY() - (this.drawSettings.pitSize * (1 / 4)));
-    }
-    else
-    {
-        this.drawSettings.context.font = "bold " + (this.drawSettings.occupationFontSize * 2) + "px math";
-        this.drawSettings.context.fillText(occupation,
-            this.getCenterX() - this.drawSettings.occupationFontSize,
-            this.getCenterY() + (this.drawSettings.occupationFontSize / 1.5));
-    }
+    OccupationText.Draw();
 }
 
 Pit.prototype.flushDelayedSeeds = function(count)

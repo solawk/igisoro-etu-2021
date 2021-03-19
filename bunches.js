@@ -363,6 +363,28 @@ export function positions(count)
 
             break;
         }
+
+        default:
+        {
+            positions =
+                [
+                    -1, -1,
+                    0, -1,
+                    1, -1,
+                    -1, 0,
+                    1, 0,
+                    -1, 1,
+                    0, 1,
+                    1, 1,
+                    -0.5, -0.5,
+                    0.5, -0.5,
+                    -0.5, 0.5,
+                    0.5, 0.5,
+                    0, 0,
+                ];
+
+            break;
+        }
     }
 
     return positions;
@@ -371,5 +393,6 @@ export function positions(count)
 export function seedSize(count)
 {
     if (count < 10) return 1;
+    else if (count < 20) return 0.8;
     else return 0.8;
 }
