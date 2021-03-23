@@ -2,15 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" href="images/icon.png" type="image/png">
     <title>Igisoro</title>
 </head>
 <body>
-    <div class="fieldButtonsWrapper">
-        <span style="color: #ffffff;">Введите данные до запуска игры</span>
-    </div>
-        
     <table id="inputTable">
         <tr>
             <td>
@@ -124,15 +121,17 @@
     <div class="fieldButtonsWrapper">
         <input type="submit" value="Обычная доска" onclick="normal()">
         <input type="submit" value="Пустая доска" onclick="empty()">
-        <span style="color: #ffffff;">Длительность движения: 100мс</span><input id="speedSlider" type="range" min="1" max="10" value="3"><span style="color: #ffffff;">1с</span>
+        <span style="color: #ffffff;">Длительность хода: 100мс</span><input id="speedSlider" type="range" min="1" max="10" value="3"><span style="color: #ffffff;">1с</span>
     </div>
     <br>
 
     <div id="canvasDiv">
         <canvas id="gameCanvas" width="640" height ="360"></canvas>
     </div>
-    <span style="color: #ffffff;">v.0.6 (16:15 19.03.2021)</span><br>
-    <span style="color: #ffffff;">Рефакторинг отрисовки и обработки действий</span><br><br>
+    <span style="color: #ffffff;">v.0.7 (10:30 23.03.2021)</span><br>
+    <span style="color: #ffffff;">Доработка архитектуры интерфейса, автоматическое масштабирование</span><br><br>
+    <span style="color: #888888;">v.0.6 (16:15 19.03.2021)</span><br>
+    <span style="color: #888888;">Рефакторинг отрисовки и обработки действий</span><br><br>
 </body>
 <script type="module" src="client.js"></script>
 <script>

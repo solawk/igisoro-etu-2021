@@ -11,15 +11,15 @@ export let CanvasSettings =
         pitGap: 0,
         pitBorderOffset: 0,
 
-        occupationFontSize: 0
+        standardFontSize: 0
     };
 
 AdjustCanvas();
 
-export let VisualElements = new Set();
+export let VisualElements = new Set;
+export let Images = new Map;
 
 let resLoadedAmount = 0;
-const resAmount = 6;
 
 LoadingScreen();
 
@@ -28,7 +28,7 @@ export function Redraw()
 {
     AdjustCanvas();
 
-    ctx.drawImage(woodenBack.image, 0, 0);
+    ctx.drawImage(Images.get("wood").image, 0, 0);
 
     for (let element of VisualElements)
     {
@@ -47,7 +47,7 @@ function AdjustCanvas()
     CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
     CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
-    CanvasSettings.occupationFontSize = Math.floor(CanvasSettings.canvasW / 36);
+    CanvasSettings.standardFontSize = Math.floor(CanvasSettings.canvasW / 36);
     CanvasSettings.pitGap = CanvasSettings.pitSize / 10;
     CanvasSettings.pitBorderOffset = CanvasSettings.pitSize / 4;
 
@@ -74,25 +74,16 @@ function LoadingImage(src)
     Images.set(src, this);
 }
 
-export let Images = new Map;
-
-const woodenBack = new LoadingImage("wood");
-const pitImage = new LoadingImage("pit");
-const borderImage = new LoadingImage("border");
-const seedImage = new LoadingImage("seed");
-const arrowImage = new LoadingImage("arrow");
-const turnIndicator = new LoadingImage("turn");
-
-let resourcesLoaded = false;
+new LoadingImage("wood");
+new LoadingImage("pit");
+new LoadingImage("border");
+new LoadingImage("seed");
+new LoadingImage("arrow");
+new LoadingImage("turn");
 
 function LoadingUpdate()
 {
-    resourcesLoaded =
-        woodenBack.loaded &&
-        pitImage.loaded &&
-        borderImage.loaded &&
-        seedImage.loaded &&
-        turnIndicator.loaded;
+    let resourcesLoaded = IsLoaded();
 
     if (resourcesLoaded)
     {
@@ -104,6 +95,20 @@ function LoadingUpdate()
     }
 }
 
+function IsLoaded()
+{
+    let isLoaded = true;
+    for (let [key, res] of Images)
+    {
+        if (res.loaded === false)
+        {
+            isLoaded = false;
+        }
+    }
+
+    return isLoaded;
+}
+
 function LoadingScreen()
 {
     ctx.beginPath();
@@ -112,5 +117,5 @@ function LoadingScreen()
     ctx.fill();
     ctx.closePath();
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
-    ctx.fillText("Loading resources (" + resLoadedAmount + " of " + resAmount + ")", CanvasSettings.canvasW / 2, CanvasSettings.canvasH / 2);
+    ctx.fillText("Loading resources (" + resLoadedAmount + " of " + Images.size + ")", CanvasSettings.canvasW / 2, CanvasSettings.canvasH / 2);
 }

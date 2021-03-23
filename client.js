@@ -20,19 +20,14 @@ import
     CanvasSettings
 } from "./rendering.js";
 
-import
-{
-    UI_Text
-} from "./ui/uiText.js";
+import * as UI_Factory from "./ui/uiFactory.js";
 
-let StandbyText = new UI_Text("Нажмите здесь, чтобы запустить игру с указанными настройками",
-    CanvasSettings.canvasW / 10,
-    CanvasSettings.canvasH / 2,
-    CanvasSettings.occupationFontSize);
-VisualElements.add(StandbyText);
+let StandbyText = UI_Factory.CreateText(0.1, 0.5,
+    "Нажмите здесь, чтобы запустить игру с указанными настройками");
 
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
+window.onresize = Redraw;
 
 function ClickHandler(event)
 {
@@ -44,13 +39,7 @@ function ClickHandler(event)
         return;
     }
 
-    for (let i = 0; i < gameScene.Pits.length; i++)
-    {
-        if (gameScene.Pits[i].isClicked(event.offsetX, event.offsetY))
-        {
-            LogicConnector.OutputCallbacks.CheckMove.call(LogicConnector.Callers.Game, gameScene.Pits[i].index, gameScene.Pits[i].side);
-        }
-    }
+    gameScene.Click(event.offsetX, event.offsetY);
 }
 
 function LocalGameStart()
@@ -71,8 +60,10 @@ function LocalGameStart()
     LogicConnector = new GameConnector();
 
     LocalGame = Start("bottom", gameSpeed, field, LogicConnector);
-    gameScene = new GameScene("bottom", field, gameSpeed);
-    VisualElements.add(gameScene);
+
+    gameScene = new GameScene(LogicConnector, "bottom", field, gameSpeed);
+    let gameSceneContainer = UI_Factory.CreateContainer(gameScene, 0, 0);
+    VisualElements.add(gameSceneContainer);
 
     LogicConnector.Callers.Game = LocalGame;
     LogicConnector.Callers.GameScene = gameScene;

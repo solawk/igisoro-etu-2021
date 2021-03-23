@@ -20,13 +20,12 @@ import * as Bunches from "./bunches.js";
 const ReverseStepMax = 20;
 const ReverseStepTime = 16;
 
-export function GameScene(turn, field, stepTime)
+export function GameScene(connector, turn, field, stepTime)
 {
+    this.connector = connector;
+
     this.stepTime = stepTime;
     this.turn = turn;
-
-    this.handX = CanvasSettings.canvasW / 2;
-    this.handY = CanvasSettings.canvasH / 2;
 
     this.ReverseSource = -1;
     this.ReverseStep = 0;
@@ -52,7 +51,7 @@ export function GameScene(turn, field, stepTime)
     this.LoadPitOccupation(field);
 }
 
-GameScene.prototype.Draw = function()
+GameScene.prototype.Draw = function(x, y)
 {
     CanvasSettings.context.drawImage(Images.get("border").image, 0, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
         CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
@@ -74,6 +73,17 @@ GameScene.prototype.Draw = function()
     }
 
     this.DrawReverseArrows();
+}
+
+GameScene.prototype.Click = function(x, y)
+{
+    for (let i = 0; i < this.Pits.length; i++)
+    {
+        if (this.Pits[i].isClicked(x, y))
+        {
+            this.connector.OutputCallbacks.CheckMove.call(this.connector.Callers.Game, this.Pits[i].index, this.Pits[i].side);
+        }
+    }
 }
 
 GameScene.prototype.DrawSeeds = function(count, x, y)

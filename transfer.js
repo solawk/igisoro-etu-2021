@@ -13,8 +13,10 @@ export function Transfer(parent, count, originSide, originIndex, destinationSide
     this.steps = Math.floor(this.scene.stepTime * 100 * (1 / 2) / this.intervalTime);
 
     let originPit = this.scene.GetPit(originSide, originIndex);
-    this.x = originPit.getCenterX();
-    this.y = originPit.getCenterY();
+    this.oX = originPit.getCenterX();
+    this.oY = originPit.getCenterY();
+    this.x = this.oX;
+    this.y = this.oY;
     this.stepsMade = 0;
 }
 
@@ -30,8 +32,9 @@ Transfer.prototype.step = function()
         this.scene.Transfers.splice(thisIndex, 1);
     }
 
-    this.x += (this.dX - this.x) / 6;
-    this.y += (this.dY - this.y) / 6;
+    const progress = this.stepsMade / this.steps;
+    this.x = this.oX + (this.dX - this.oX) * Math.pow(progress, 1/2);
+    this.y = this.oY + (this.dY - this.oY) * Math.pow(progress, 1/2);
 }
 
 Transfer.prototype.draw = function(drawSeedsRoutine)

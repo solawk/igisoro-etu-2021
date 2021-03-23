@@ -150,6 +150,12 @@ Game.prototype.SetState = function(newState)
 
 Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
 {
+    if (this.CheckGameOver(this.GetOtherSide()))
+    {
+        console.log("Game over!");
+        return;
+    }
+
     switch (this.state)
     {
         case "Idle":
@@ -354,8 +360,8 @@ Game.prototype.actionCapture = function()
     let capturedFromSecond = this.GetOccupation(this.GetOtherSide(), opposings[1]);
     let capturedAmount = capturedFromFirst + capturedFromSecond;
 
-    console.log("CAPTURING " + capturedFromFirst + " from " + opposings[0] + " + " + capturedFromSecond + " from " + opposings[1]
-        + " into " + this.sowPit);
+    console.log("CAPTURING (" + capturedFromFirst + " from " + opposings[0] + ") + (" + capturedFromSecond + " from " + opposings[1]
+        + ") into " + this.sowPit);
 
     this.SetOccupation(this.GetOtherSide(), opposings[0], 0);
     this.SetOccupation(this.GetOtherSide(), opposings[1], 0);
@@ -511,9 +517,9 @@ Game.prototype.CheckReversible = function(side, index)
     return this.CheckCapture(indexWhereReverseEnds, loops, 1);
 }
 
-Game.prototype.CheckGameOver = function()
+Game.prototype.CheckGameOver = function(side)
 {
-    if (this.turn === "bottom")
+    if (side === "bottom")
     {
         for (let i = 0; i < 16; i++)
         {

@@ -4,10 +4,7 @@ import
     Images
 } from "./rendering.js";
 
-import
-{
-    UI_Text
-} from "./ui/uiText.js";
+import * as UI_Factory from "./ui/uiFactory.js";
 
 export function Pit(parent, side, index)
 {
@@ -22,7 +19,7 @@ export function Pit(parent, side, index)
 
 Pit.prototype.getCenterX = function()
 {
-    if (this.side === "hand") return this.scene.handX;
+    if (this.side === "hand") return CanvasSettings.canvasW / 2;
 
     let indexX = this.index < 8 ? this.index : 15 - this.index; // 0-7 from left to right
 
@@ -42,7 +39,7 @@ Pit.prototype.getCenterX = function()
 
 Pit.prototype.getCenterY = function()
 {
-    if (this.side === "hand") return this.scene.handY;
+    if (this.side === "hand") return CanvasSettings.canvasH / 2;
 
     let row = this.index < 8 ? 0 : 1;
 
@@ -86,10 +83,9 @@ Pit.prototype.drawPit = function()
 
 Pit.prototype.drawOccupation = function(occupation)
 {
-    const OccupationText = new UI_Text(occupation,
+    const OccupationText = UI_Factory.CreateTemporaryText(
         this.getCenterX() + (CanvasSettings.pitSize * (1 / 4)),
-        this.getCenterY() - (CanvasSettings.pitSize * (1 / 4)),
-        CanvasSettings.occupationFontSize);
+        this.getCenterY() - (CanvasSettings.pitSize * (1 / 4)), occupation, true);
 
     OccupationText.Draw();
 }
