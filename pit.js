@@ -8,7 +8,7 @@ import * as UI_Factory from "./ui/uiFactory.js";
 
 export function Pit(parent, side, index)
 {
-    this.scene = parent;
+    this.table = parent;
 
     this.side = side;
     this.index = index;
@@ -23,7 +23,9 @@ Pit.prototype.getCenterX = function()
 
     let indexX = this.index < 8 ? this.index : 15 - this.index; // 0-7 from left to right
 
-    let sideMultiplier = this.side === "bottom" ? -1 : 1;
+    let sideMultiplier = 1;
+    if (this.side === "bottom") sideMultiplier *= -1;
+    if (this.table.side === "top") sideMultiplier *= -1;
 
     let xFromCenter = indexX - 4; // -4 -3 -2 -1 1 2 3 4
     if (xFromCenter >= 0) xFromCenter++;
@@ -45,7 +47,9 @@ Pit.prototype.getCenterY = function()
 
     let afterOffset = CanvasSettings.pitSize * (0.5 + row) + CanvasSettings.pitGap * row;
 
-    let sideMultiplier = this.side === "bottom" ? 1 : -1;
+    let sideMultiplier = -1;
+    if (this.side === "bottom") sideMultiplier *= -1;
+    if (this.table.side === "top") sideMultiplier *= -1;
 
     return Math.floor(CanvasSettings.canvasH / 2 + sideMultiplier * (CanvasSettings.pitBorderOffset + afterOffset));
 }

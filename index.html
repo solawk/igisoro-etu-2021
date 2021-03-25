@@ -122,14 +122,23 @@
         <input type="submit" value="Обычная доска" onclick="normal()">
         <input type="submit" value="Пустая доска" onclick="empty()">
         <span style="color: #ffffff;">Длительность хода: 100мс</span><input id="speedSlider" type="range" min="1" max="10" value="3"><span style="color: #ffffff;">1с</span>
+        <span style="color: #ffffff;">Уровень: 0<input id="levelSlider" style="color: #ffffff;" type="range" min="0" max="2" value="2" list="levelList">2</span>
+        <datalist id="levelList">
+            <option value="0" label="0">
+            <option value="1" label="1">
+            <option value="2" label="2">
+        </datalist>
     </div>
     <br>
 
     <div id="canvasDiv">
         <canvas id="gameCanvas" width="640" height ="360"></canvas>
     </div>
-    <span style="color: #ffffff;">v.0.7 (10:30 23.03.2021)</span><br>
-    <span style="color: #ffffff;">Доработка архитектуры интерфейса, автоматическое масштабирование</span><br><br>
+    <span style="color: #ffffff;">v.0.8 (14:00 25.03.2021)</span><br>
+    <span style="color: #ffffff;">Добавлены уровни игры (в смысле задних ходов), ходить назад можно только с третьего хода</span><br>
+    <span style="color: #ffffff;">Переработана загрузка элементов интерфейса, подготовка к реализации игровых сцен и меню</span><br><br>
+    <span style="color: #888888;">v.0.7 (10:30 23.03.2021)</span><br>
+    <span style="color: #888888;">Доработка архитектуры интерфейса, автоматическое масштабирование</span><br><br>
     <span style="color: #888888;">v.0.6 (16:15 19.03.2021)</span><br>
     <span style="color: #888888;">Рефакторинг отрисовки и обработки действий</span><br><br>
 </body>

@@ -20,9 +20,10 @@ import * as Bunches from "./bunches.js";
 const ReverseStepMax = 20;
 const ReverseStepTime = 16;
 
-export function GameScene(connector, turn, field, stepTime)
+export function GameTable(connector, turn, field, stepTime, side)
 {
     this.connector = connector;
+    this.side = side;
 
     this.stepTime = stepTime;
     this.turn = turn;
@@ -51,7 +52,7 @@ export function GameScene(connector, turn, field, stepTime)
     this.LoadPitOccupation(field);
 }
 
-GameScene.prototype.Draw = function(x, y)
+GameTable.prototype.Draw = function(x, y)
 {
     CanvasSettings.context.drawImage(Images.get("border").image, 0, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
         CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
@@ -75,18 +76,18 @@ GameScene.prototype.Draw = function(x, y)
     this.DrawReverseArrows();
 }
 
-GameScene.prototype.Click = function(x, y)
+GameTable.prototype.Click = function(x, y)
 {
     for (let i = 0; i < this.Pits.length; i++)
     {
         if (this.Pits[i].isClicked(x, y))
         {
-            this.connector.OutputCallbacks.CheckMove.call(this.connector.Callers.Game, this.Pits[i].index, this.Pits[i].side);
+            this.connector.OutputCallbacks.StartMove.call(this.connector.Callers.Game, this.Pits[i].index, this.Pits[i].side);
         }
     }
 }
 
-GameScene.prototype.DrawSeeds = function(count, x, y)
+GameTable.prototype.DrawSeeds = function(count, x, y)
 {
     if (count === 0) return;
 
@@ -102,7 +103,7 @@ GameScene.prototype.DrawSeeds = function(count, x, y)
     }
 }
 
-GameScene.prototype.DrawTurnIndicator = function()
+GameTable.prototype.DrawTurnIndicator = function()
 {
     const turn = this.turn;
 
@@ -122,12 +123,12 @@ GameScene.prototype.DrawTurnIndicator = function()
     }
 }
 
-GameScene.prototype.CreateTransfer = function(count, originSide, originIndex, destinationSide, destinationIndex)
+GameTable.prototype.CreateTransfer = function(count, originSide, originIndex, destinationSide, destinationIndex)
 {
     this.Transfers.push(new Transfer(this, count, originSide, originIndex, destinationSide, destinationIndex));
 }
 
-GameScene.prototype.MoveTransfers = function()
+GameTable.prototype.MoveTransfers = function()
 {
     let needRedraw = false;
 
@@ -146,7 +147,7 @@ GameScene.prototype.MoveTransfers = function()
     }
 }
 
-GameScene.prototype.GetPit = function(side, index)
+GameTable.prototype.GetPit = function(side, index)
 {
     if (side === "hand") return this.Hand;
 
@@ -159,7 +160,7 @@ GameScene.prototype.GetPit = function(side, index)
     }
 }
 
-GameScene.prototype.SetPitOccupation = function(side, index, occupation)
+GameTable.prototype.SetPitOccupation = function(side, index, occupation)
 {
     let PitToModify;
 
@@ -178,13 +179,13 @@ GameScene.prototype.SetPitOccupation = function(side, index, occupation)
     //this.Draw();
 }
 
-GameScene.prototype.SetTurn = function(turn)
+GameTable.prototype.SetTurn = function(turn)
 {
     this.turn = turn;
     Redraw();
 }
 
-GameScene.prototype.LoadPitOccupation = function(field)
+GameTable.prototype.LoadPitOccupation = function(field)
 {
     for (let i = 0; i < 16; i++)
     {
@@ -195,7 +196,7 @@ GameScene.prototype.LoadPitOccupation = function(field)
     this.SetPitOccupation("hand", 0, 0);
 }
 
-GameScene.prototype.SetReverse = function(src)
+GameTable.prototype.SetReverse = function(src)
 {
     this.ReverseSource = src;
 
@@ -213,7 +214,7 @@ GameScene.prototype.SetReverse = function(src)
     }
 }
 
-GameScene.prototype.IncreaseReverse = function(me)
+GameTable.prototype.IncreaseReverse = function(me)
 {
     me.ReverseStep++;
     if (me.ReverseStep < ReverseStepMax)
@@ -227,7 +228,7 @@ GameScene.prototype.IncreaseReverse = function(me)
     Redraw();
 }
 
-GameScene.prototype.DrawReverseArrows = function()
+GameTable.prototype.DrawReverseArrows = function()
 {
     if (this.ReverseSource === -1) return;
 
@@ -267,7 +268,7 @@ GameScene.prototype.DrawReverseArrows = function()
     CanvasSettings.context.globalAlpha = 1;
 }
 
-GameScene.prototype.DrawSingleReverseArrow = function(src, d, angle)
+GameTable.prototype.DrawSingleReverseArrow = function(src, d, angle)
 {
     CanvasSettings.context.translate(src.getCenterX(), src.getCenterY());
 

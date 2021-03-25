@@ -1,18 +1,18 @@
 export function Transfer(parent, count, originSide, originIndex, destinationSide, destinationIndex)
 {
-    this.scene = parent;
+    this.table = parent;
 
     this.count = count;
 
-    this.dPit = this.scene.GetPit(destinationSide, destinationIndex); // Destination pit
+    this.dPit = this.table.GetPit(destinationSide, destinationIndex); // Destination pit
     this.dX = this.dPit.getCenterX();
     this.dY = this.dPit.getCenterY();
     this.dPit.delayedSeeds += this.count;
 
     this.intervalTime = 16; // TO DO
-    this.steps = Math.floor(this.scene.stepTime * 100 * (1 / 2) / this.intervalTime);
+    this.steps = Math.floor(this.table.stepTime * 100 * (1 / 2) / this.intervalTime);
 
-    let originPit = this.scene.GetPit(originSide, originIndex);
+    let originPit = this.table.GetPit(originSide, originIndex);
     this.oX = originPit.getCenterX();
     this.oY = originPit.getCenterY();
     this.x = this.oX;
@@ -26,10 +26,10 @@ Transfer.prototype.step = function()
     if (this.stepsMade === this.steps)
     {
         this.dPit.flushDelayedSeeds(this.count);
-        this.scene.Draw();
+        this.table.Draw();
 
-        let thisIndex = this.scene.Transfers.indexOf(this);
-        this.scene.Transfers.splice(thisIndex, 1);
+        let thisIndex = this.table.Transfers.indexOf(this);
+        this.table.Transfers.splice(thisIndex, 1);
     }
 
     const progress = this.stepsMade / this.steps;

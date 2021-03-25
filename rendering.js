@@ -1,5 +1,6 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+window.onresize = Redraw;
 
 export let CanvasSettings =
     {
@@ -16,7 +17,7 @@ export let CanvasSettings =
 
 AdjustCanvas();
 
-export let VisualElements = new Set;
+export let VisualElements = new Map;
 export let Images = new Map;
 
 let resLoadedAmount = 0;
@@ -30,7 +31,7 @@ export function Redraw()
 
     ctx.drawImage(Images.get("wood").image, 0, 0);
 
-    for (let element of VisualElements)
+    for (let [key, element] of VisualElements)
     {
         element.Draw();
     }

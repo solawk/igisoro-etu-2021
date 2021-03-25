@@ -1,45 +1,34 @@
 import
 {
-    Start
+    StartGame
 } from './game.js';
 
 import
 {
-    GameScene
-} from "./gameScene.js";
+    GameTable
+} from "./gameTable.js";
 
 import
 {
     GameConnector
 } from "./gameConnector.js";
 
-import
-{
-    VisualElements,
-    Redraw,
-    CanvasSettings
-} from "./rendering.js";
+import * as SceneManager from "./sceneManager.js";
 
-import * as UI_Factory from "./ui/uiFactory.js";
-
-let StandbyText = UI_Factory.CreateText(0.1, 0.5,
-    "Нажмите здесь, чтобы запустить игру с указанными настройками");
+SceneManager.SetScene("standby");
 
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
-window.onresize = Redraw;
 
 function ClickHandler(event)
 {
-    if (gameScene == null)
+    if (gameTable == null)
     {
-        VisualElements.delete(StandbyText);
         LocalGameStart();
-        Redraw();
         return;
     }
 
-    gameScene.Click(event.offsetX, event.offsetY);
+    gameTable.Click(event.offsetX, event.offsetY);
 }
 
 function LocalGameStart()
@@ -59,28 +48,28 @@ function LocalGameStart()
 
     LogicConnector = new GameConnector();
 
-    LocalGame = Start("bottom", gameSpeed, field, LogicConnector);
+    LocalGame = StartGame("bottom", gameSpeed, field, parseInt(document.getElementById("levelSlider").value), LogicConnector);
 
-    gameScene = new GameScene(LogicConnector, "bottom", field, gameSpeed);
-    let gameSceneContainer = UI_Factory.CreateContainer(gameScene, 0, 0);
-    VisualElements.add(gameSceneContainer);
+    gameTable = new GameTable(LogicConnector, "bottom", field, gameSpeed, "bottom");
+    SceneManager.SetGameTableObject(gameTable);
+    SceneManager.SetScene("game");
 
     LogicConnector.Callers.Game = LocalGame;
-    LogicConnector.Callers.GameScene = gameScene;
+    LogicConnector.Callers.GameTable = gameTable;
 
-    LogicConnector.OutputCallbacks.SetOccupation = gameScene.SetPitOccupation;
-    LogicConnector.OutputCallbacks.AddTransfer = gameScene.CreateTransfer;
-    LogicConnector.OutputCallbacks.CheckMove = LocalGame.CheckMove;
-    LogicConnector.OutputCallbacks.SetTurn = gameScene.SetTurn;
-    LogicConnector.OutputCallbacks.Reverse = gameScene.SetReverse;
+    LogicConnector.OutputCallbacks.SetOccupation = gameTable.SetPitOccupation;
+    LogicConnector.OutputCallbacks.AddTransfer = gameTable.CreateTransfer;
+    LogicConnector.OutputCallbacks.StartMove = LocalGame.StartMove;
+    LogicConnector.OutputCallbacks.SetTurn = gameTable.SetTurn;
+    LogicConnector.OutputCallbacks.Reverse = gameTable.SetReverse;
 
-    LogicConnector.InputCallbacks.SetOccupation = gameScene.SetPitOccupation;
-    LogicConnector.InputCallbacks.AddTransfer = gameScene.CreateTransfer;
-    LogicConnector.InputCallbacks.SetTurn = gameScene.SetTurn;
-    LogicConnector.InputCallbacks.Reverse = gameScene.SetReverse;
+    LogicConnector.InputCallbacks.SetOccupation = gameTable.SetPitOccupation;
+    LogicConnector.InputCallbacks.AddTransfer = gameTable.CreateTransfer;
+    LogicConnector.InputCallbacks.SetTurn = gameTable.SetTurn;
+    LogicConnector.InputCallbacks.Reverse = gameTable.SetReverse;
 }
 
 export let LocalGame = null;
-let gameScene = null;
+let gameTable = null;
 let LogicConnector = null;
 let PresentationConnector = null;

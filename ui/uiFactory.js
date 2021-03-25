@@ -23,10 +23,10 @@ export function CreateContainer(element, x, y)
     return new UI_Container(element, x, y);
 }
 
-export function CreateText(x, y, text, absolute)
+export function CreateText(x, y, text, absolute, name)
 {
     let textContainer = CreateTemporaryText(x, y, text, absolute);
-    VisualElements.add(textContainer);
+    VisualElements.set(name, textContainer);
 
     return textContainer;
 }

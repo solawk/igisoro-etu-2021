@@ -3,12 +3,12 @@ export function GameConnector()
     this.Callers =
         {
             Game: null,
-            GameScene: null,
+            GameTable: null,
         };
 
     this.InputCallbacks =
         {
-            CheckMove: null,
+            StartMove: null,
             SetOccupation: null,
             AddTransfer: null,
             Reverse: null,
@@ -17,7 +17,7 @@ export function GameConnector()
 
     this.OutputCallbacks =
         {
-            CheckMove: null,
+            StartMove: null,
             SetOccupation: null,
             AddTransfer: null,
             Reverse: null,
