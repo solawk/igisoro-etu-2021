@@ -10,6 +10,12 @@ import
     VisualElements
 } from "./rendering.js";
 
+import
+{
+    LocalGameStart,
+    LocalGameEnd
+} from "./client.js";
+
 export let gameTableObject = null;
 export function SetGameTableObject(gameTable)
 {
@@ -17,6 +23,7 @@ export function SetGameTableObject(gameTable)
 }
 
 let Scenes = new Map;
+
 export function SetScene(sceneName)
 {
     VisualElements.clear();
@@ -29,8 +36,8 @@ standbyLayout.addElementCall
 (
     function()
     {
-        UI_Factory.CreateText(0.1, 0.5,
-            "Нажмите здесь, чтобы запустить игру с указанными настройками", false, "standbyText");
+        UI_Factory.CreateButton(0.5, 0.5 * 9 / 16, 0, 0.9, 0.1, LocalGameStart,
+            "Нажмите здесь, чтобы запустить игру с указанными настройками", "launchButton");
     }
 );
 
@@ -40,7 +47,11 @@ gameLayout.addElementCall
 (
     function()
     {
-        let gameSceneContainer = UI_Factory.CreateContainer(gameTableObject, 0, 0);
-        VisualElements.set("gameScene", gameSceneContainer);
+        let gameTableContainer = UI_Factory.CreateContainer(gameTableObject, 0, 0, 0);
+        VisualElements.set("gameTable", gameTableContainer);
+        gameTableContainer.element.PitsFlushTexts();
+
+        UI_Factory.CreateButton(0.5, 0.5 * 9 / 16, 1, 0.3, 0.05, LocalGameEnd,
+            "Выйти", "endButton");
     }
 );

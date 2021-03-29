@@ -13,6 +13,11 @@ import
     GameConnector
 } from "./gameConnector.js";
 
+import
+{
+    GetElementsSorted
+} from "./rendering.js";
+
 import * as SceneManager from "./sceneManager.js";
 
 SceneManager.SetScene("standby");
@@ -22,18 +27,18 @@ canvas.onclick = ClickHandler;
 
 function ClickHandler(event)
 {
-    if (gameTable == null)
-    {
-        LocalGameStart();
-        return;
-    }
+    const elements = GetElementsSorted(false);
 
-    gameTable.Click(event.offsetX, event.offsetY);
+    for (let element of elements)
+    {
+        if (element.Click(event.offsetX, event.offsetY)) break;
+    }
 }
 
-function LocalGameStart()
+export function LocalGameStart()
 {
     const gameSpeed = parseInt(document.getElementById("speedSlider").value);
+    const reverseLevel = parseInt(document.getElementById("levelSlider").value)
     let field =
         {
             topOccupations: [],
@@ -48,7 +53,7 @@ function LocalGameStart()
 
     LogicConnector = new GameConnector();
 
-    LocalGame = StartGame("bottom", gameSpeed, field, parseInt(document.getElementById("levelSlider").value), LogicConnector);
+    LocalGame = StartGame("bottom", gameSpeed, field, reverseLevel, LogicConnector);
 
     gameTable = new GameTable(LogicConnector, "bottom", field, gameSpeed, "bottom");
     SceneManager.SetGameTableObject(gameTable);
@@ -69,7 +74,21 @@ function LocalGameStart()
     LogicConnector.InputCallbacks.Reverse = gameTable.SetReverse;
 }
 
+export function LocalGameEnd()
+{
+    LocalGame = null;
+    gameTable = null;
+
+    SceneManager.SetScene("standby");
+}
+
 export let LocalGame = null;
 let gameTable = null;
 let LogicConnector = null;
 let PresentationConnector = null;
+
+const gameSettings =
+    {
+        gameSpeed: 0,
+        reverseLevel: 0
+    }

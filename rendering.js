@@ -31,10 +31,29 @@ export function Redraw()
 
     ctx.drawImage(Images.get("wood").image, 0, 0);
 
-    for (let [key, element] of VisualElements)
+    const VisualElementsList = GetElementsSorted(true);
+
+    for (let element of VisualElementsList)
     {
         element.Draw();
     }
+}
+
+export function GetElementsSorted(furthest_first)
+{
+    let VisualElementsList = Array.from(VisualElements.values());
+    VisualElementsList.sort(furthest_first ? ZCompareFurthestFirst : ZCompareNearestFirst);
+    return VisualElementsList;
+}
+
+function ZCompareFurthestFirst(a, b)
+{
+    return b.z - a.z;
+}
+
+function ZCompareNearestFirst(a, b)
+{
+    return a.z - b.z;
 }
 
 function AdjustCanvas()
@@ -48,7 +67,7 @@ function AdjustCanvas()
     CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
     CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
-    CanvasSettings.standardFontSize = Math.floor(CanvasSettings.canvasW / 36);
+    CanvasSettings.standardFontSize = CanvasSettings.canvasW / 36;
     CanvasSettings.pitGap = CanvasSettings.pitSize / 10;
     CanvasSettings.pitBorderOffset = CanvasSettings.pitSize / 4;
 
@@ -79,8 +98,13 @@ new LoadingImage("wood");
 new LoadingImage("pit");
 new LoadingImage("border");
 new LoadingImage("seed");
+new LoadingImage("seedShadow");
 new LoadingImage("arrow");
 new LoadingImage("turn");
+new LoadingImage("pitHalf");
+new LoadingImage("pitGradient");
+new LoadingImage("hand");
+new LoadingImage("handShadow");
 
 function LoadingUpdate()
 {
@@ -118,5 +142,6 @@ function LoadingScreen()
     ctx.fill();
     ctx.closePath();
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
+    ctx.font = "bold " + CanvasSettings.standardFontSize + "px math";
     ctx.fillText("Loading resources (" + resLoadedAmount + " of " + Images.size + ")", CanvasSettings.canvasW / 2, CanvasSettings.canvasH / 2);
 }

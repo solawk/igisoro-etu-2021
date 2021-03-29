@@ -7,7 +7,7 @@ export function Transfer(parent, count, originSide, originIndex, destinationSide
     this.dPit = this.table.GetPit(destinationSide, destinationIndex); // Destination pit
     this.dX = this.dPit.getCenterX();
     this.dY = this.dPit.getCenterY();
-    this.dPit.delayedSeeds += this.count;
+    this.dPit.addDelayedSeeds(count);
 
     this.intervalTime = 16; // TO DO
     this.steps = Math.floor(this.table.stepTime * 100 * (1 / 2) / this.intervalTime);

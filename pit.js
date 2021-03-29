@@ -15,11 +15,20 @@ export function Pit(parent, side, index)
 
     this.occupation = 0;
     this.delayedSeeds = 0; // Seeds that are currently being transferred into the pit
+
+    const occupationTextX = (this.getCenterX() + (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    const occupationTextY = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    this.occupationTextContainer = UI_Factory.CreateTemporaryText(occupationTextX, occupationTextY, -1, 0);
+}
+
+Pit.prototype.flushTextToVisualElements = function()
+{
+    UI_Factory.MapElement(this.side + "Pit" + this.index + "Occupation", this.occupationTextContainer);
 }
 
 Pit.prototype.getCenterX = function()
 {
-    if (this.side === "hand") return CanvasSettings.canvasW / 2;
+    if (this.side === "hand") return this.table.HandX();
 
     let indexX = this.index < 8 ? this.index : 15 - this.index; // 0-7 from left to right
 
@@ -41,7 +50,7 @@ Pit.prototype.getCenterX = function()
 
 Pit.prototype.getCenterY = function()
 {
-    if (this.side === "hand") return CanvasSettings.canvasH / 2;
+    if (this.side === "hand") return this.table.HandY();
 
     let row = this.index < 8 ? 0 : 1;
 
@@ -56,12 +65,27 @@ Pit.prototype.getCenterY = function()
 
 Pit.prototype.isClicked = function(x, y)
 {
+    x *= CanvasSettings.canvasW;
+    y *= CanvasSettings.canvasW;
     return Math.sqrt(Math.pow(x - this.getCenterX(), 2) + Math.pow(y - this.getCenterY(), 2)) < (CanvasSettings.pitSize / 2);
 }
 
 Pit.prototype.setOccupation = function(occupation)
 {
     this.occupation = occupation;
+    this.updateOccupationText();
+}
+
+Pit.prototype.addDelayedSeeds = function(dSeedsAmount)
+{
+    this.delayedSeeds += dSeedsAmount;
+    this.updateOccupationText();
+}
+
+Pit.prototype.updateOccupationText = function()
+{
+    const visualOccupation = this.occupation - this.delayedSeeds;
+    this.occupationTextContainer.element.text = visualOccupation > 0 ? visualOccupation : "";
 }
 
 Pit.prototype.getOccupation = function()
@@ -71,30 +95,37 @@ Pit.prototype.getOccupation = function()
 
 Pit.prototype.draw = function(drawSeedsRoutine)
 {
-    if (this.side !== "hand") this.drawPit();
+    this.occupationTextContainer.x = (this.getCenterX() + (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    this.occupationTextContainer.y = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+
+    this.drawPit();
 
     let occupation = this.getOccupation() - this.delayedSeeds;
-    this.drawOccupation(occupation);
-    drawSeedsRoutine(occupation, this.getCenterX(), this.getCenterY());
+    drawSeedsRoutine(occupation, this.getCenterX(), this.getCenterY(), this.side !== "hand" ? 1 : 0.6);
 }
 
 Pit.prototype.drawPit = function()
 {
-    CanvasSettings.context.drawImage(Images.get("pit").image,
-        this.getCenterX() - CanvasSettings.pitSize / 2, this.getCenterY() - CanvasSettings.pitSize / 2,
-        CanvasSettings.pitSize, CanvasSettings.pitSize);
-}
+    if (this.side !== "hand")
+    {
+        CanvasSettings.context.drawImage(Images.get("pit").image,
+            this.getCenterX() - CanvasSettings.pitSize / 2, this.getCenterY() - CanvasSettings.pitSize / 2,
+            CanvasSettings.pitSize, CanvasSettings.pitSize);
+    }
+    else if (this.occupation + this.delayedSeeds > 0)
+    {
+        CanvasSettings.context.drawImage(Images.get("handShadow").image,
+            this.getCenterX() - CanvasSettings.pitSize / 4, this.getCenterY() - CanvasSettings.pitSize / 4 - 4,
+            CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
 
-Pit.prototype.drawOccupation = function(occupation)
-{
-    const OccupationText = UI_Factory.CreateTemporaryText(
-        this.getCenterX() + (CanvasSettings.pitSize * (1 / 4)),
-        this.getCenterY() - (CanvasSettings.pitSize * (1 / 4)), occupation, true);
-
-    OccupationText.Draw();
+        CanvasSettings.context.drawImage(Images.get("hand").image,
+            this.getCenterX() - CanvasSettings.pitSize / 4 + 4, this.getCenterY() - CanvasSettings.pitSize / 4 - 4,
+            CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
+    }
 }
 
 Pit.prototype.flushDelayedSeeds = function(count)
 {
     this.delayedSeeds -= count;
+    this.updateOccupationText();
 }

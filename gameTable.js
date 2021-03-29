@@ -27,6 +27,8 @@ export function GameTable(connector, turn, field, stepTime, side)
 
     this.stepTime = stepTime;
     this.turn = turn;
+    this.handPitIndexPosition = 0;
+    this.handDrawOppositeSideFlag = false;
 
     this.ReverseSource = -1;
     this.ReverseStep = 0;
@@ -54,8 +56,7 @@ export function GameTable(connector, turn, field, stepTime, side)
 
 GameTable.prototype.Draw = function(x, y)
 {
-    CanvasSettings.context.drawImage(Images.get("border").image, 0, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
-        CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
+    this.DrawBorderLines();
 
     this.DrawTurnIndicator();
 
@@ -83,22 +84,63 @@ GameTable.prototype.Click = function(x, y)
         if (this.Pits[i].isClicked(x, y))
         {
             this.connector.OutputCallbacks.StartMove.call(this.connector.Callers.Game, this.Pits[i].index, this.Pits[i].side);
+            return true;
         }
+    }
+
+    return false;
+}
+
+GameTable.prototype.DrawBorderLines = function()
+{
+    const buttonLocations =
+        [
+            0.35, 0.65,
+        ];
+
+    const BorderImage = Images.get("border").image;
+
+    let leftEdgeX = 0;
+    let rightEdgeX = 0;
+    let nextEdgeIndex = 1;
+
+    while (rightEdgeX !== 1)
+    {
+        if (buttonLocations.length < nextEdgeIndex)
+        {
+            rightEdgeX = 1;
+        }
+        else
+        {
+            rightEdgeX = buttonLocations[nextEdgeIndex - 1] + 0.003;
+        }
+
+        CanvasSettings.context.drawImage(BorderImage,
+            leftEdgeX * CanvasSettings.canvasW, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
+            rightEdgeX * CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
+
+        if (buttonLocations.length >= nextEdgeIndex)
+        {
+            leftEdgeX = buttonLocations[nextEdgeIndex] - 0.003;
+        }
+
+        nextEdgeIndex += 2;
     }
 }
 
-GameTable.prototype.DrawSeeds = function(count, x, y)
+GameTable.prototype.DrawSeeds = function(count, x, y, sizeMultiplier = 1)
 {
     if (count === 0) return;
 
     let positions = Bunches.positions(count);
-    let seedSize = (CanvasSettings.pitSize / 6) * Bunches.seedSize(count);
+    let seedSize = (CanvasSettings.pitSize / 6) * Bunches.seedSize(count) * sizeMultiplier;
 
     for (let i = 0; i < positions.length; i += 2)
     {
         let sx = positions[i] * seedSize;
         let sy = -positions[i + 1] * seedSize;
 
+        CanvasSettings.context.drawImage(Images.get("seedShadow").image, x + sx - (seedSize / 2) - 1, y + sy - (seedSize / 2), seedSize, seedSize);
         CanvasSettings.context.drawImage(Images.get("seed").image, x + sx - (seedSize / 2), y + sy - (seedSize / 2), seedSize, seedSize);
     }
 }
@@ -125,6 +167,23 @@ GameTable.prototype.DrawTurnIndicator = function()
 
 GameTable.prototype.CreateTransfer = function(count, originSide, originIndex, destinationSide, destinationIndex)
 {
+    this.handDrawOppositeSideFlag = false;
+
+    let handNewIndex = -1;
+
+    if (originSide === this.turn) handNewIndex = originIndex;
+    if (destinationSide === this.turn) handNewIndex = destinationIndex;
+    if (handNewIndex !== -1)
+    {
+        if (handNewIndex > 7) handNewIndex = 15 - handNewIndex;
+        if (handNewIndex === 0) handNewIndex++;
+        this.handPitIndexPosition = handNewIndex;
+    }
+    else
+    {
+        this.handDrawOppositeSideFlag = true;
+    }
+
     this.Transfers.push(new Transfer(this, count, originSide, originIndex, destinationSide, destinationIndex));
 }
 
@@ -279,4 +338,40 @@ GameTable.prototype.DrawSingleReverseArrow = function(src, d, angle)
         CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
 
     CanvasSettings.context.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+GameTable.prototype.HandX = function()
+{
+    let sideMultiplier = 1;
+    if (this.side === "bottom") sideMultiplier *= -1;
+    if (this.turn === "top") sideMultiplier *= -1;
+
+    let xFromCenter = this.handPitIndexPosition - 4; // -4 -3 -2 -1 1 2 3 4
+
+    let gapsTotalDistance = xFromCenter * CanvasSettings.pitGap;
+    let pitsTotalDistance = xFromCenter * CanvasSettings.pitSize;
+
+    return Math.floor(CanvasSettings.canvasW / 2 + (gapsTotalDistance + pitsTotalDistance) * sideMultiplier);
+}
+
+GameTable.prototype.HandY = function()
+{
+    let afterOffset = CanvasSettings.pitSize;
+
+    let sideMultiplier = -1;
+    if (this.side === "bottom") sideMultiplier *= -1;
+    if (this.turn === "top") sideMultiplier *= -1;
+    if (this.handDrawOppositeSideFlag === true) sideMultiplier *= -1;
+
+    return Math.floor(CanvasSettings.canvasH / 2 + sideMultiplier * (CanvasSettings.pitBorderOffset + afterOffset));
+}
+
+GameTable.prototype.PitsFlushTexts = function()
+{
+    for (let i = 0; i < this.Pits.length; i++)
+    {
+        this.Pits[i].flushTextToVisualElements();
+    }
+
+    this.Hand.flushTextToVisualElements();
 }

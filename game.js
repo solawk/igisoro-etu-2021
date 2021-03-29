@@ -513,6 +513,8 @@ Game.prototype.CheckCapture = function(pit, reverseLoops = 0, reverseBonus = 0)
 
 Game.prototype.ReverseAllowed = function()
 {
+    if (this.reverseLevel === 3) return "possible";
+
     if (this.reverseLevel === 0) return "no reverses allowed";
     if (this.reverseLevel === 1 && this.normalCaptureMade === false) return "no normal captures made";
     if (this.turnsMade < 4) return "turns made: " + this.turnsMade;
