@@ -20,8 +20,6 @@ import
 
 import * as SceneManager from "./sceneManager.js";
 
-SceneManager.SetScene("standby");
-
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
 
@@ -79,7 +77,7 @@ export function LocalGameEnd()
     LocalGame = null;
     gameTable = null;
 
-    SceneManager.SetScene("standby");
+    SceneManager.SetScene("mainmenu");
 }
 
 export let LocalGame = null;
@@ -87,8 +85,11 @@ let gameTable = null;
 let LogicConnector = null;
 let PresentationConnector = null;
 
-const gameSettings =
+export const gameSettings =
     {
+        playerName: "Player",
         gameSpeed: 0,
         reverseLevel: 0
-    }
+    };
+
+SceneManager.SetScene("mainmenu");

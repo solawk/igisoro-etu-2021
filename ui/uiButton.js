@@ -4,7 +4,10 @@ import
     Images
 } from "../rendering.js";
 
-import * as UI_Factory from "./uiFactory.js";
+import
+{
+    DrawFrame
+} from "./uiFrame.js";
 
 export function UI_Button(length, height, callback)
 {
@@ -27,24 +30,7 @@ UI_Button.prototype.CalcHeight = function()
 UI_Button.prototype.Draw = function(x, y)
 {
     // Background drawing
-    this.DrawButton(x, y);
-}
-
-UI_Button.prototype.DrawButton = function(x, y)
-{
-    const length = this.CalcLength();
-    const height = this.CalcHeight();
-
-    const pitHalfImage = Images.get("pitHalf").image;
-    const pitGradientImage = Images.get("pitGradient").image;
-
-    CanvasSettings.context.drawImage(pitHalfImage, x - length / 2, y - height / 2, height / 2, height);
-    CanvasSettings.context.drawImage(pitGradientImage, x - length / 2 + height / 2, y - height / 2, length - height, height);
-
-    CanvasSettings.context.translate(x + length / 2 - height / 2, y);
-    CanvasSettings.context.rotate(Math.PI);
-    CanvasSettings.context.drawImage(pitHalfImage, 0, -height / 2, -height / 2, height);
-    CanvasSettings.context.setTransform(1, 0, 0, 1, 0, 0);
+    DrawFrame(x, y, this.CalcLength(), this.CalcHeight());
 }
 
 UI_Button.prototype.Click = function(x, y)
@@ -74,4 +60,8 @@ UI_Button.prototype.Click = function(x, y)
     {
         return false;
     }
+}
+
+UI_Button.prototype.Destroy = function()
+{
 }

@@ -33,6 +33,8 @@ export function GameTable(connector, turn, field, stepTime, side)
     this.ReverseSource = -1;
     this.ReverseStep = 0;
 
+    this.winner = null;
+
     // Pits
     this.Pits = [];
     for (let i = 0; i < 16; i++)
@@ -91,6 +93,10 @@ GameTable.prototype.Click = function(x, y)
     return false;
 }
 
+GameTable.prototype.Destroy = function()
+{
+}
+
 GameTable.prototype.DrawBorderLines = function()
 {
     const buttonLocations =
@@ -117,7 +123,7 @@ GameTable.prototype.DrawBorderLines = function()
 
         CanvasSettings.context.drawImage(BorderImage,
             leftEdgeX * CanvasSettings.canvasW, (CanvasSettings.canvasH / 2) - (CanvasSettings.pitSize / 8),
-            rightEdgeX * CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
+            (rightEdgeX - leftEdgeX) * CanvasSettings.canvasW, CanvasSettings.pitSize / 4);
 
         if (buttonLocations.length >= nextEdgeIndex)
         {
@@ -140,7 +146,6 @@ GameTable.prototype.DrawSeeds = function(count, x, y, sizeMultiplier = 1)
         let sx = positions[i] * seedSize;
         let sy = -positions[i + 1] * seedSize;
 
-        CanvasSettings.context.drawImage(Images.get("seedShadow").image, x + sx - (seedSize / 2) - 1, y + sy - (seedSize / 2), seedSize, seedSize);
         CanvasSettings.context.drawImage(Images.get("seed").image, x + sx - (seedSize / 2), y + sy - (seedSize / 2), seedSize, seedSize);
     }
 }

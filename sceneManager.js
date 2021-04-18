@@ -13,7 +13,8 @@ import
 import
 {
     LocalGameStart,
-    LocalGameEnd
+    LocalGameEnd,
+    gameSettings
 } from "./client.js";
 
 export let gameTableObject = null;
@@ -26,18 +27,51 @@ let Scenes = new Map;
 
 export function SetScene(sceneName)
 {
+    for (let element of VisualElements.values())
+    {
+        element.Destroy();
+    }
+
     VisualElements.clear();
     Scenes.get(sceneName).unveil();
 }
 
-let standbyLayout = new UI_Layout();
-Scenes.set("standby", standbyLayout);
-standbyLayout.addElementCall
-(
+let mainMenuLayout = new UI_Layout();
+Scenes.set("mainmenu", mainMenuLayout);
+mainMenuLayout.addElementCall(
     function()
     {
-        UI_Factory.CreateButton(0.5, 0.5 * 9 / 16, 0, 0.9, 0.1, LocalGameStart,
-            "Нажмите здесь, чтобы запустить игру с указанными настройками", "launchButton");
+        const logoText = UI_Factory.CreateText(0.5, 0.15 * 9 / 16, 0, "Igisoro", "logoText");
+        logoText.element.sizeRatio = 3;
+
+        UI_Factory.CreateText(0.5, 0.275 * 9 / 16, 0, "Welcome back, " + gameSettings.playerName, "nameText");
+
+        UI_Factory.CreateButton(0.5, 0.35 * 9 / 16, 1, 0.2, 0.04,
+            function()
+            {
+                if (!UI_Factory.ElementExists("nameInput"))
+                {
+                    UI_Factory.RemoveElement("nameText");
+
+                    UI_Factory.CreateInput(0.5, 0.275 * 9 / 16, 1, 0.3, 0.05, "playerName", "text", 12, "nameInput");
+
+                    UI_Factory.ChangeButtonText("nameButton", "Apply");
+                }
+                else
+                {
+                    UI_Factory.GetElement("nameInput").RetractInput();
+                    UI_Factory.RemoveElement("nameInput");
+
+                    UI_Factory.CreateText(0.5, 0.275 * 9 / 16, 0, "Welcome back, " + gameSettings.playerName, "nameText");
+
+                    UI_Factory.ChangeButtonText("nameButton", "Change name");
+                }
+            },
+            "Change name", "nameButton");
+
+        UI_Factory.CreateButton(0.25, 0.6 * 9 / 16, 0, 0.4, 0.1, LocalGameStart, "Local Multiplayer", "localGameButton");
+        const localGameText = UI_Factory.GetElement("localGameButtonText");
+        localGameText.sizeRatio = 1.5;
     }
 );
 
@@ -52,6 +86,6 @@ gameLayout.addElementCall
         gameTableContainer.element.PitsFlushTexts();
 
         UI_Factory.CreateButton(0.5, 0.5 * 9 / 16, 1, 0.3, 0.05, LocalGameEnd,
-            "Выйти", "endButton");
+            "Exit", "endButton");
     }
 );

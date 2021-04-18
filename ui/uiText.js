@@ -21,7 +21,7 @@ UI_Text.prototype.Draw = function(x, y)
     CanvasSettings.context.fillStyle = this.color;
 
     const size = this.CalcSize();
-    CanvasSettings.context.font = "bold " + size + "px math";
+    CanvasSettings.context.font = "bold " + size + "px Georgia, serif";
     CanvasSettings.context.textAlign = "center";
 
     if (this.shadow)
@@ -37,4 +37,8 @@ UI_Text.prototype.Draw = function(x, y)
 UI_Text.prototype.Click = function(x, y)
 {
     return false;
+}
+
+UI_Text.prototype.Destroy = function()
+{
 }

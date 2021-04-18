@@ -67,7 +67,7 @@ function AdjustCanvas()
     CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
     CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
-    CanvasSettings.standardFontSize = CanvasSettings.canvasW / 36;
+    CanvasSettings.standardFontSize = CanvasSettings.canvasW / 42;
     CanvasSettings.pitGap = CanvasSettings.pitSize / 10;
     CanvasSettings.pitBorderOffset = CanvasSettings.pitSize / 4;
 
@@ -98,7 +98,6 @@ new LoadingImage("wood");
 new LoadingImage("pit");
 new LoadingImage("border");
 new LoadingImage("seed");
-new LoadingImage("seedShadow");
 new LoadingImage("arrow");
 new LoadingImage("turn");
 new LoadingImage("pitHalf");

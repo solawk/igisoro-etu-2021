@@ -13,6 +13,7 @@ export function GameConnector()
             AddTransfer: null,
             Reverse: null,
             SetTurn: null,
+            GameOver: null,
         };
 
     this.OutputCallbacks =
@@ -22,5 +23,6 @@ export function GameConnector()
             AddTransfer: null,
             Reverse: null,
             SetTurn: null,
+            GameOver: null,
         };
 }
