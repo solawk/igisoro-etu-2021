@@ -1,7 +1,6 @@
 import
 {
-    CanvasSettings,
-    Images
+    CanvasSettings
 } from "../rendering.js";
 
 import
@@ -17,20 +16,10 @@ export function UI_Button(length, height, callback)
     this.callback = callback;
 }
 
-UI_Button.prototype.CalcLength = function()
-{
-    return this.lengthRatio * CanvasSettings.canvasW;
-}
-
-UI_Button.prototype.CalcHeight = function()
-{
-    return this.heightRatio * CanvasSettings.canvasW;
-}
-
 UI_Button.prototype.Draw = function(x, y)
 {
     // Background drawing
-    DrawFrame(x, y, this.CalcLength(), this.CalcHeight());
+    DrawFrame(x, y, CanvasSettings.deratio(this.lengthRatio), CanvasSettings.deratio(this.heightRatio));
 }
 
 UI_Button.prototype.Click = function(x, y)

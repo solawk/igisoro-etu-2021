@@ -24,6 +24,11 @@ import
     UI_Input
 } from "./uiInput.js";
 
+import
+{
+    UI_Image
+} from "./uiImage.js";
+
 let TextColor = "rgba(255, 255, 255, 1)";
 let TextShadow = true;
 
@@ -40,13 +45,10 @@ export function MapElement(name, element)
     VisualElements.set(name, element);
 }
 
-export function ElementExists(name)
-{
-    return VisualElements.get(name) != null;
-}
-
 export function GetElement(name)
 {
+    if (VisualElements.get(name) == null) return null;
+
     return VisualElements.get(name).element;
 }
 
@@ -56,9 +58,15 @@ export function RemoveElement(name)
     Redraw();
 }
 
-export function ChangeButtonText(buttonName, text)
+export function ChangeElementText(element, text)
 {
-    GetElement(buttonName + "Text").text = text;
+    element.text = text;
+    Redraw();
+}
+
+export function ChangeElementImage(element, image)
+{
+    element.imageName = image;
     Redraw();
 }
 
@@ -79,9 +87,9 @@ export function SwitchElementVisibility(name, visibility)
     Redraw();
 }
 
-export function CreateText(x, y, z, text, name)
+export function CreateText(x, y, z, text, name, size)
 {
-    let textContainer = CreateTemporaryText(x, y, z, text);
+    let textContainer = CreateTemporaryText(x, y, z, text, size);
     MapElement(name, textContainer);
 
     Redraw();
@@ -89,19 +97,21 @@ export function CreateText(x, y, z, text, name)
     return textContainer;
 }
 
-export function CreateTemporaryText(x, y, z, text)
+export function CreateTemporaryText(x, y, z, text, size)
 {
-    let textElement = new UI_Text(text, 1, TextColor, TextShadow);
+    let textElement = new UI_Text(text, size, TextColor, TextShadow);
+
     return CreateContainer(textElement, x, y, z);
 }
 
-export function CreateButton(x, y, z, length, height, callback, text, name)
+export function CreateButton(x, y, z, length, height, callback, text, name, textSizeRatio)
 {
     let buttonElement = new UI_Button(length, height, callback);
+
     let buttonContainer = CreateContainer(buttonElement, x, y, z);
     MapElement(name, buttonContainer);
 
-    CreateText(x, y, z, text, name + "Text");
+    CreateText(x, y, z, text, name + "Text", textSizeRatio);
 
     Redraw();
 
@@ -111,6 +121,7 @@ export function CreateButton(x, y, z, length, height, callback, text, name)
 export function CreateInput(x, y, z, length, height, field, type, maxLength, name)
 {
     let inputElement = new UI_Input(length, height, field, type, maxLength);
+
     let inputContainer = CreateContainer(inputElement, x, y, z);
     inputElement.DeployInput(x, y);
     MapElement(name, inputContainer);
@@ -118,4 +129,16 @@ export function CreateInput(x, y, z, length, height, field, type, maxLength, nam
     Redraw();
 
     return inputContainer;
+}
+
+export function CreateImage(x, y, z, image, size, name)
+{
+    let imageElement = new UI_Image(image, size);
+
+    let imageContainer = CreateContainer(imageElement, x, y, z);
+    MapElement(name, imageContainer);
+
+    Redraw();
+
+    return imageContainer;
 }

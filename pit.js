@@ -18,7 +18,7 @@ export function Pit(parent, side, index)
 
     const occupationTextX = (this.getCenterX() + (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
     const occupationTextY = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
-    this.occupationTextContainer = UI_Factory.CreateTemporaryText(occupationTextX, occupationTextY, -1, 0);
+    this.occupationTextContainer = UI_Factory.CreateTemporaryText(occupationTextX, occupationTextY, -1, 0, 1);
 }
 
 Pit.prototype.flushTextToVisualElements = function()

@@ -1,4 +1,5 @@
-import {
+import
+{
     CanvasSettings, Images
 } from "../rendering.js";
 

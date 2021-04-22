@@ -18,20 +18,29 @@ UI_Text.prototype.CalcSize = function()
 
 UI_Text.prototype.Draw = function(x, y)
 {
+    this.text = this.text.toString();
+
     CanvasSettings.context.fillStyle = this.color;
 
     const size = this.CalcSize();
     CanvasSettings.context.font = "bold " + size + "px Georgia, serif";
     CanvasSettings.context.textAlign = "center";
 
-    if (this.shadow)
+    const splitText = this.text.split("\n");
+    let line = 0;
+    for (let subtext of splitText)
     {
-        CanvasSettings.context.fillStyle = "rgba(0, 0, 0, 1)";
-        CanvasSettings.context.fillText(this.text, x - (size / 10), y + size / 4);
-    }
+        if (this.shadow)
+        {
+            CanvasSettings.context.fillStyle = "rgba(0, 0, 0, 1)";
+            CanvasSettings.context.fillText(subtext, x - (size / 10), y + size / 3 + (size * 1.2 * (line - Math.floor(splitText.length / 2))));
+        }
 
-    CanvasSettings.context.fillStyle = "rgba(255, 255, 255, 1)";
-    CanvasSettings.context.fillText(this.text, x, y + size / 4);
+        CanvasSettings.context.fillStyle = "rgba(255, 255, 255, 1)";
+        CanvasSettings.context.fillText(subtext, x, y + size / 3 + (size * 1.2 * (line - Math.floor(splitText.length / 2))));
+
+        line++;
+    }
 }
 
 UI_Text.prototype.Click = function(x, y)

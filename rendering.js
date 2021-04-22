@@ -12,7 +12,8 @@ export let CanvasSettings =
         pitGap: 0,
         pitBorderOffset: 0,
 
-        standardFontSize: 0
+        standardFontSize: 0,
+        deratio: function(ratio) { return ratio * CanvasSettings.canvasW; }
     };
 
 AdjustCanvas();
@@ -63,7 +64,7 @@ function AdjustCanvas()
     {
         CanvasSettings.canvasW = window.innerHeight * (16 / 10);
     }
-    CanvasSettings.canvasW *= 0.8;// WIP
+    //CanvasSettings.canvasW *= 0.8;// WIP
     CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
     CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
@@ -104,6 +105,7 @@ new LoadingImage("pitHalf");
 new LoadingImage("pitGradient");
 new LoadingImage("hand");
 new LoadingImage("handShadow");
+new LoadingImage("checkMark");
 
 function LoadingUpdate()
 {

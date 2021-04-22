@@ -25,16 +25,6 @@ export function UI_Input(length, height, field, type, maxLength)
     this.inputElement = null;
 }
 
-UI_Input.prototype.CalcLength = function()
-{
-    return this.lengthRatio * CanvasSettings.canvasW;
-}
-
-UI_Input.prototype.CalcHeight = function()
-{
-    return this.heightRatio * CanvasSettings.canvasW;
-}
-
 UI_Input.prototype.DeployInput = function(x, y)
 {
     this.inputElement = document.createElement("input");
@@ -65,12 +55,12 @@ UI_Input.prototype.SetElementPosition = function(x, y)
     if (this.inputElement == null) return;
 
     this.inputElement.style.left = (document.getElementById("gameCanvas").offsetLeft + (x - this.lengthRatio / 2) * CanvasSettings.canvasW) + 'px';
-    this.inputElement.style.top = (document.getElementById("gameCanvas").offsetTop + (y - this.heightRatio / 2) * CanvasSettings.canvasW - (this.CalcHeight() / 10)) + 'px';
-    this.inputElement.style.width = this.CalcLength() * 0.95 + 'px';
-    this.inputElement.style.height = this.CalcHeight() + 'px';
-    this.inputElement.style.fontSize = (this.CalcHeight() * 0.5) + 'px';
+    this.inputElement.style.top = (document.getElementById("gameCanvas").offsetTop + (y - this.heightRatio / 2) * CanvasSettings.canvasW - (CanvasSettings.deratio(this.heightRatio) / 10)) + 'px';
+    this.inputElement.style.width = CanvasSettings.deratio(this.lengthRatio) * 0.95 + 'px';
+    this.inputElement.style.height = CanvasSettings.deratio(this.heightRatio) + 'px';
+    this.inputElement.style.fontSize = (CanvasSettings.deratio(this.heightRatio) * 0.5) + 'px';
 
-    DrawFrame(x * CanvasSettings.canvasW, y * CanvasSettings.canvasW, this.CalcLength(), this.CalcHeight());
+    DrawFrame(x * CanvasSettings.canvasW, y * CanvasSettings.canvasW, CanvasSettings.deratio(this.lengthRatio), CanvasSettings.deratio(this.heightRatio));
 }
 
 UI_Input.prototype.Draw = function(x, y)

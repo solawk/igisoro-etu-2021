@@ -35,18 +35,21 @@ function ClickHandler(event)
 
 export function LocalGameStart()
 {
-    const gameSpeed = parseInt(document.getElementById("speedSlider").value);
-    const reverseLevel = parseInt(document.getElementById("levelSlider").value)
+    const gameSpeed = 1 + (5 - gameSettings.gameSpeed) * 2;
+    const reverseLevel = gameSettings.reverseLevel;
     let field =
         {
             topOccupations: [],
             bottomOccupations: []
         };
 
-    for (let i = 0; i < 16; i++)
+    for (let i = 0; i < 8; i++)
     {
-        field.topOccupations[i] = parseInt(document.getElementById("t" + i).value);
-        field.bottomOccupations[i] = parseInt(document.getElementById("b" + i).value);
+        field.topOccupations[i] = 4;
+        field.bottomOccupations[i] = 4;
+
+        field.topOccupations[i + 8] = 0;
+        field.bottomOccupations[i + 8] = 0;
     }
 
     LogicConnector = new GameConnector();
@@ -88,8 +91,8 @@ let PresentationConnector = null;
 export const gameSettings =
     {
         playerName: "Player",
-        gameSpeed: 0,
-        reverseLevel: 0
+        gameSpeed: 4, // 1 = 900 ms per move (very slow), 700...500...300 , 5 = 100 ms per move (very fast)
+        reverseLevel: 2
     };
 
 SceneManager.SetScene("mainmenu");
