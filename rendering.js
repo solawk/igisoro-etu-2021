@@ -13,7 +13,8 @@ export let CanvasSettings =
         pitBorderOffset: 0,
 
         standardFontSize: 0,
-        deratio: function(ratio) { return ratio * CanvasSettings.canvasW; }
+        deratioW: function(ratio) { return ratio * CanvasSettings.canvasW; },
+        deratioH: function(ratio) { return ratio * CanvasSettings.canvasH; }
     };
 
 AdjustCanvas();

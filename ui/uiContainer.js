@@ -9,6 +9,7 @@ export function UI_Container(element, x, y, z)
     this.x = x;
     this.y = y;
     this.z = z;
+    this.rotation = 0;
     this.visible = true;
 }
 
@@ -21,14 +22,14 @@ UI_Container.prototype.Draw = function()
 {
     if (!this.visible) return;
 
-    this.element.Draw(this.x * CanvasSettings.canvasW, this.y * CanvasSettings.canvasW);
+    this.element.Draw(this.x * CanvasSettings.canvasW, this.y * CanvasSettings.canvasH, this.rotation);
 }
 
 UI_Container.prototype.Click = function(x, y)
 {
     if (!this.visible) return false;
 
-    return this.element.Click((x / CanvasSettings.canvasW) - this.x, (y / CanvasSettings.canvasW) - this.y);
+    return this.element.Click((x / CanvasSettings.canvasW) - this.x, (y / CanvasSettings.canvasH) - this.y);
 }
 
 UI_Container.prototype.Destroy = function()

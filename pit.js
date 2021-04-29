@@ -17,7 +17,7 @@ export function Pit(parent, side, index)
     this.delayedSeeds = 0; // Seeds that are currently being transferred into the pit
 
     const occupationTextX = (this.getCenterX() + (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
-    const occupationTextY = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    const occupationTextY = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasH;
     this.occupationTextContainer = UI_Factory.CreateTemporaryText(occupationTextX, occupationTextY, -1, 0, 1);
 }
 
@@ -66,7 +66,7 @@ Pit.prototype.getCenterY = function()
 Pit.prototype.isClicked = function(x, y)
 {
     x *= CanvasSettings.canvasW;
-    y *= CanvasSettings.canvasW;
+    y *= CanvasSettings.canvasH;
     return Math.sqrt(Math.pow(x - this.getCenterX(), 2) + Math.pow(y - this.getCenterY(), 2)) < (CanvasSettings.pitSize / 2);
 }
 
@@ -93,10 +93,13 @@ Pit.prototype.getOccupation = function()
     return this.occupation;
 }
 
-Pit.prototype.draw = function(drawSeedsRoutine)
+Pit.prototype.draw = function(drawSeedsRoutine, invert)
 {
-    this.occupationTextContainer.x = (this.getCenterX() + (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
-    this.occupationTextContainer.y = (this.getCenterY() - (CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    const centerShiftMultiplier = !invert ? 1 : -1;
+
+    this.occupationTextContainer.x = (this.getCenterX() + (centerShiftMultiplier * CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasW;
+    this.occupationTextContainer.y = (this.getCenterY() - (centerShiftMultiplier * CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasH;
+    this.occupationTextContainer.rotation = centerShiftMultiplier === 1 ? 0 : Math.PI;
 
     this.drawPit();
 
@@ -106,13 +109,13 @@ Pit.prototype.draw = function(drawSeedsRoutine)
 
 Pit.prototype.drawPit = function()
 {
-    if (this.side !== "hand")
+    if (this.side !== "hand") // If pit
     {
         CanvasSettings.context.drawImage(Images.get("pit").image,
             this.getCenterX() - CanvasSettings.pitSize / 2, this.getCenterY() - CanvasSettings.pitSize / 2,
             CanvasSettings.pitSize, CanvasSettings.pitSize);
     }
-    else if (this.occupation + this.delayedSeeds > 0)
+    else if (this.occupation + this.delayedSeeds > 0) // If hand
     {
         CanvasSettings.context.drawImage(Images.get("handShadow").image,
             this.getCenterX() - CanvasSettings.pitSize / 4, this.getCenterY() - CanvasSettings.pitSize / 4 - 4,

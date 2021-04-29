@@ -70,6 +70,12 @@ export function ChangeElementImage(element, image)
     Redraw();
 }
 
+export function ChangeElementColor(element, color)
+{
+    element.color = color;
+    Redraw();
+}
+
 export function SwitchElementVisibility(name, visibility)
 {
     const element = VisualElements.get(name);
@@ -104,9 +110,9 @@ export function CreateTemporaryText(x, y, z, text, size)
     return CreateContainer(textElement, x, y, z);
 }
 
-export function CreateButton(x, y, z, length, height, callback, text, name, textSizeRatio)
+export function CreateButton(x, y, z, length, height, callback, text, name, textSizeRatio, missCallback)
 {
-    let buttonElement = new UI_Button(length, height, callback);
+    let buttonElement = new UI_Button(length, height, callback, missCallback);
 
     let buttonContainer = CreateContainer(buttonElement, x, y, z);
     MapElement(name, buttonContainer);

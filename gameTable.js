@@ -20,13 +20,14 @@ import * as Bunches from "./bunches.js";
 const ReverseStepMax = 20;
 const ReverseStepTime = 16;
 
-export function GameTable(connector, turn, field, stepTime, side)
+export function GameTable(connector, turn, field, stepTime, rotateOccupations, side)
 {
     this.connector = connector;
     this.side = side;
 
     this.stepTime = stepTime;
     this.turn = turn;
+    this.rotateOccupations = rotateOccupations;
     this.handPitIndexPosition = 0;
     this.handDrawOppositeSideFlag = false;
 
@@ -65,10 +66,10 @@ GameTable.prototype.Draw = function(x, y)
     // Pits
     for (let i = 0; i < this.Pits.length; i++)
     {
-        this.Pits[i].draw(this.DrawSeeds);
+        this.Pits[i].draw(this.DrawSeeds, this.turn !== this.side && this.rotateOccupations);
     }
 
-    this.Hand.draw(this.DrawSeeds);
+    this.Hand.draw(this.DrawSeeds, this.turn !== this.side && this.rotateOccupations);
 
     // Transfers
     for (let i = 0; i < this.Transfers.length; i++)
@@ -152,9 +153,7 @@ GameTable.prototype.DrawSeeds = function(count, x, y, sizeMultiplier = 1)
 
 GameTable.prototype.DrawTurnIndicator = function()
 {
-    const turn = this.turn;
-
-    if (turn === "bottom")
+    if (this.turn === this.side)
     {
         CanvasSettings.context.drawImage(Images.get("turn").image, 0, CanvasSettings.canvasH * (1 - 1 / 32),
             CanvasSettings.canvasW, CanvasSettings.canvasH * (1 / 32));

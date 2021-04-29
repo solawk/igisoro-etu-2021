@@ -10,16 +10,15 @@ export function UI_Image(image, size)
     this.sizeRatio = size;
 }
 
-UI_Image.prototype.Draw = function(x, y)
+UI_Image.prototype.Draw = function(x, y, rotation)
 {
     if (this.imageName == null) return;
 
     const image = Images.get(this.imageName).image;
 
-    const w = CanvasSettings.canvasW * this.sizeRatio;
-    const h = CanvasSettings.canvasW * this.sizeRatio;
+    const size = CanvasSettings.canvasW * this.sizeRatio;
 
-    CanvasSettings.context.drawImage(image, x - w / 2, y - h / 2, w, h);
+    CanvasSettings.context.drawImage(image, x - size / 2, y - size / 2, size, size);
 }
 
 UI_Image.prototype.Click = function(x, y)

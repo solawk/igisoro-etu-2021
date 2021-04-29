@@ -1,7 +1,12 @@
-export function StartGame(side, stepTime, field, reverseLevel, LogicConnector)
+(function(exports)
 {
-    return new Game(side, stepTime, field, reverseLevel, LogicConnector);
-}
+
+    exports.StartGame = function StartGame(side, stepTime, field, reverseLevel, LogicConnector)
+    {
+        return new Game(side, stepTime, field, reverseLevel, LogicConnector);
+    }
+
+})(typeof exports === 'undefined' ? this['game'] = {} : exports);
 
 function Game(side, stepTime, field, reverseLevel, Connector)
 {
@@ -228,7 +233,7 @@ Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
 // Player is initiating a turn
 Game.prototype.actionIdle = function(clickedPit, clickedSide)
 {
-    console.log("CLICK on " + clickedPit);
+    //console.log("CLICK on " + clickedPit);
     this.SetState("SideCheck");
 
     this.DispatchMove(clickedPit, clickedSide, false);
@@ -240,7 +245,7 @@ Game.prototype.actionSideCheck = function(clickedPit, clickedSide)
     if (clickedSide === this.turn)
     {
         // Side is correct
-        console.log("SIDE ok");
+        //console.log("SIDE ok");
 
         this.SetState("OccupationCheck");
         this.DispatchMove(clickedPit, clickedSide, false);
@@ -248,7 +253,7 @@ Game.prototype.actionSideCheck = function(clickedPit, clickedSide)
     else
     {
         // Side is incorrect
-        console.log("SIDE fail");
+        //console.log("SIDE fail");
 
         this.SetState("Idle");
     }
@@ -271,7 +276,7 @@ Game.prototype.actionOccupationCheck = function(clickedPit, clickedSide)
     if (pitOccupation > 1)
     {
         // There are enough seeds to make a move
-        console.log("OCCUPATION ok");
+        //console.log("OCCUPATION ok");
 
         this.SetState("ReverseCheck");
         this.sowPit = clickedPit;
@@ -282,7 +287,7 @@ Game.prototype.actionOccupationCheck = function(clickedPit, clickedSide)
     else
     {
         // There aren't
-        console.log("OCCUPATION fail");
+        //console.log("OCCUPATION fail");
 
         this.SetState("Idle");
     }
@@ -297,7 +302,7 @@ Game.prototype.actionReverseCheck = function()
         if (this.CheckReversible(this.turn, this.pit))
         {
             // We request an input for the possible reverse move
-            console.log("REVERSIBLE true");
+            //console.log("REVERSIBLE true");
 
             this.SetState("ReverseIdle");
             this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, this.pit);
@@ -305,7 +310,7 @@ Game.prototype.actionReverseCheck = function()
         else
         {
             // Cannot reverse, hence doing a regular move
-            console.log("REVERSIBLE false");
+            //console.log("REVERSIBLE false");
 
             this.SetState("Grab");
         }
@@ -313,7 +318,7 @@ Game.prototype.actionReverseCheck = function()
     else
     {
         // Not checking the reverse possibility
-        console.log("REVERSIBLE no check");
+        //console.log("REVERSIBLE no check");
 
         this.SetState("Grab");
     }
@@ -327,7 +332,7 @@ Game.prototype.actionReverseIdle = function(clickedPit)
 
     if (clickedPit === reverseIndexes[0])
     {
-        console.log("REVERSE true");
+        //console.log("REVERSE true");
         this.SetState("ReverseGrab");
         this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, -1);
 
@@ -338,7 +343,7 @@ Game.prototype.actionReverseIdle = function(clickedPit)
 
     if (clickedPit === reverseIndexes[1])
     {
-        console.log("REVERSE false");
+        //console.log("REVERSE false");
         this.SetState("Grab");
         this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, -1);
 
@@ -350,14 +355,14 @@ Game.prototype.actionCaptureCheck = function()
 {
     if (this.CheckCapture(this.pit))
     {
-        console.log("CAPTURE true");
+        //console.log("CAPTURE true");
 
         this.SetState("Capture");
         this.DispatchMove(null, null, true);
     }
     else
     {
-        console.log("CAPTURE false");
+        //console.log("CAPTURE false");
 
         this.SetState("ReverseCheck");
         this.DispatchMove(null, null, false);
@@ -371,8 +376,8 @@ Game.prototype.actionCapture = function()
     let capturedFromSecond = this.GetOccupation(this.GetOtherSide(), opposings[1]);
     let capturedAmount = capturedFromFirst + capturedFromSecond;
 
-    console.log("CAPTURING (" + capturedFromFirst + " from " + opposings[0] + ") + (" + capturedFromSecond + " from " + opposings[1]
-        + ") into " + this.sowPit);
+    //console.log("CAPTURING (" + capturedFromFirst + " from " + opposings[0] + ") + (" + capturedFromSecond + " from " + opposings[1]
+    //    + ") into " + this.sowPit);
 
     this.SetOccupation(this.GetOtherSide(), opposings[0], 0);
     this.SetOccupation(this.GetOtherSide(), opposings[1], 0);
@@ -383,7 +388,7 @@ Game.prototype.actionCapture = function()
     if (this.ReverseAllowed() === "possible" && this.CheckReversible(this.turn, this.sowPit))
     {
         // Can reverse after capture
-        console.log("REVERSIBLE AFTER CAPTURE true");
+        //console.log("REVERSIBLE AFTER CAPTURE true");
 
         this.CreateTransfer(capturedFromFirst, this.GetOtherSide(), opposings[0], this.turn, this.sowPit);
         this.CreateTransfer(capturedFromSecond, this.GetOtherSide(), opposings[1], this.turn, this.sowPit);
@@ -395,7 +400,7 @@ Game.prototype.actionCapture = function()
     else
     {
         // Cannot reverse after capture
-        console.log("REVERSIBLE AFTER CAPTURE false");
+        //console.log("REVERSIBLE AFTER CAPTURE false");
 
         this.CreateTransfer(capturedFromFirst, this.GetOtherSide(), opposings[0], "hand", 0);
         this.CreateTransfer(capturedFromSecond, this.GetOtherSide(), opposings[1], "hand", 0);
@@ -414,7 +419,7 @@ Game.prototype.actionCapture = function()
 
 Game.prototype.actionGrab = function(direction)
 {
-    console.log("GRAB from " + this.pit);
+    //console.log("GRAB from " + this.pit);
     this.sowPit = this.pit;
 
     let pitOccupation = this.GetOccupation(this.turn, this.pit);
@@ -440,7 +445,7 @@ Game.prototype.actionGrab = function(direction)
 
 Game.prototype.actionPut = function(direction)
 {
-    console.log("PUT into " + this.pit);
+    //console.log("PUT into " + this.pit);
 
     this.DeltaOccupation(this.turn, this.pit, 1);
     this.DeltaOccupation("hand", 0, -1);
@@ -468,17 +473,17 @@ Game.prototype.actionPut = function(direction)
 
 Game.prototype.actionPutEnd = function()
 {
-    console.log("PUT END in " + this.pit);
+    //console.log("PUT END in " + this.pit);
 
     if (this.GetOccupation(this.turn, this.pit) > 1)
     {
-        console.log("CAN CONTINUE true");
+        //console.log("CAN CONTINUE true");
         this.SetState("CaptureCheck")
         this.DispatchMove(null, null, true);
     }
     else
     {
-        console.log("CAN CONTINUE false");
+        //console.log("CAN CONTINUE false");
         this.SetState("End");
         this.DispatchMove(null, null, false);
     }
@@ -486,7 +491,7 @@ Game.prototype.actionPutEnd = function()
 
 Game.prototype.actionEnd = function()
 {
-    console.log("END");
+    //console.log("END");
     this.pit = -1;
     this.sowPit = -1;
     this.normalCaptureMade = false;

@@ -8,11 +8,11 @@ export function UI_Layout()
     this.uiFactoryCalls = [];
 }
 
-UI_Layout.prototype.unveil = function()
+UI_Layout.prototype.unveil = function(parameters)
 {
     for (let call of this.uiFactoryCalls)
     {
-        call.call();
+        call(parameters);
     }
 
     Redraw();
