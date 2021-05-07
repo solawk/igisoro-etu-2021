@@ -15,8 +15,6 @@ import * as Messenger from "./clientMessenger.js";
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
 
-console.log(typeof (process) === "undefined");
-
 function ClickHandler(event)
 {
     const elements = GetElementsSorted(false);
@@ -38,16 +36,11 @@ export function ConnectToServer()
     Subject.Notify("serverPend");
     console.log("Connection pending");
 
-    if (typeof (process) !== "undefined")
-    {
-        // heroku deploy
-        serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com");
-    }
-    else
-    {
-        // local deploy
-        serverWebsocket = new WebSocket("wss://localhost:5000");
-    }
+    // heroku deploy
+    serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com");
+
+    // local deploy
+    //serverWebsocket = new WebSocket("wss://localhost:5000");
 
     serverWebsocket.addEventListener("open", function()
     {
