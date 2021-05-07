@@ -1,11 +1,13 @@
 const WebSocket = require("ws");
-const Express = require("express");
+//const Express = require("express");
 const Sessions = require("./sessionInstance");
 const Messenger = require("./serverMessenger");
 const game = require("./game");
 
-const Server = new WebSocket.Server({port: process.env.GAME_PORT || 5000, clientTracking: true, });
+const Server = new WebSocket.Server({port: process.env.PORT || 5000, clientTracking: true, });
 
+// only in local
+/*
 const MonitoringApp = Express();
 const MonitoringAppPort = process.env.PORT || 3000;
 MonitoringApp.listen(MonitoringAppPort, function()
@@ -62,6 +64,7 @@ MonitoringApp.get("/", function(request, response)
 
     response.send(content);
 });
+*/
 
 Server.on("connection", function(ws)
 {
