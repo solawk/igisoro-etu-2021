@@ -17,13 +17,16 @@ import
 
 import * as Bunches from "./bunches.js";
 
+import * as UI from "./ui/uiFactory.js";
+
 const ReverseStepMax = 20;
 const ReverseStepTime = 16;
 
-export function GameTable(connector, turn, field, stepTime, rotateOccupations, side)
+export function GameTable(connector, turn, field, stepTime, rotateOccupations, side, opponent)
 {
     this.connector = connector;
     this.side = side;
+    this.opponent = opponent;
 
     this.stepTime = stepTime;
     this.turn = turn;
@@ -34,7 +37,9 @@ export function GameTable(connector, turn, field, stepTime, rotateOccupations, s
     this.ReverseSource = -1;
     this.ReverseStep = 0;
 
-    this.winner = null;
+    this.meIsWinner = false;
+    this.winnerTextProgress = 0;
+    this.winnerText = null;
 
     // Pits
     this.Pits = [];
@@ -52,6 +57,7 @@ export function GameTable(connector, turn, field, stepTime, rotateOccupations, s
     setInterval(function()
     {
         me.MoveTransfers();
+        me.MoveWinnerText();
     }, 16);
 
     this.LoadPitOccupation(field);
@@ -86,7 +92,7 @@ GameTable.prototype.Click = function(x, y)
     {
         if (this.Pits[i].isClicked(x, y))
         {
-            this.connector.OutputCallbacks.StartMove.call(this.connector.Callers.Game, this.Pits[i].index, this.Pits[i].side);
+            this.connector.ClientToServerCallbacks.StartMove.call(this.connector.Callers.Server, this.Pits[i].index, this.Pits[i].side);
             return true;
         }
     }
@@ -100,10 +106,22 @@ GameTable.prototype.Destroy = function()
 
 GameTable.prototype.DrawBorderLines = function()
 {
-    const buttonLocations =
-        [
-            0.35, 0.65,
-        ];
+    let buttonLocations;
+    if (this.opponent == null)
+    {
+        buttonLocations =
+            [
+                0.35, 0.65,
+            ];
+    }
+    else
+    {
+        buttonLocations =
+            [
+                0.025, 0.325,
+                0.35, 0.65,
+            ];
+    }
 
     const BorderImage = Images.get("border").image;
 
@@ -137,7 +155,7 @@ GameTable.prototype.DrawBorderLines = function()
 
 GameTable.prototype.DrawSeeds = function(count, x, y, sizeMultiplier = 1)
 {
-    if (count === 0) return;
+    if (count <= 0) return;
 
     let positions = Bunches.positions(count);
     let seedSize = (CanvasSettings.pitSize / 6) * Bunches.seedSize(count) * sizeMultiplier;
@@ -166,6 +184,19 @@ GameTable.prototype.DrawTurnIndicator = function()
             CanvasSettings.canvasW, CanvasSettings.canvasH * (1 / 32));
 
         CanvasSettings.context.setTransform(1, 0, 0, 1, 0, 0);
+    }
+}
+
+GameTable.prototype.DesignateWinner = function(winnerSide)
+{
+    this.meIsWinner = winnerSide === this.side;
+    this.winnerTextProgress = 40;
+
+    const text = this.meIsWinner ? "You win!" : (this.opponent != null ? this.opponent  + " wins!" : "You win!");
+    this.winnerText = UI.CreateText(0.5, 0.5 + 0.6 * (this.meIsWinner ? 1 : -1), -1, text, "winnerText", 2);
+    if (this.opponent == null && this.rotateOccupations && this.turn !== this.side)
+    {
+        this.winnerText.rotation = Math.PI;
     }
 }
 
@@ -206,6 +237,16 @@ GameTable.prototype.MoveTransfers = function()
 
     if (needRedraw)
     {
+        Redraw();
+    }
+}
+
+GameTable.prototype.MoveWinnerText = function()
+{
+    if (this.winnerTextProgress > 0)
+    {
+        this.winnerTextProgress--;
+        this.winnerText.y = 0.5 + 0.25 * (this.meIsWinner ? 1 : -1) + 0.35 * Math.pow(this.winnerTextProgress / 40, 2) * (this.meIsWinner ? 1 : -1);
         Redraw();
     }
 }
@@ -299,30 +340,31 @@ GameTable.prototype.DrawReverseArrows = function()
     let distanceFromSource = (CanvasSettings.pitSize + CanvasSettings.pitGap) * Math.pow(this.ReverseStep / 20, 1 / 4);
 
     let sourcePit = this.GetPit(this.turn, this.ReverseSource);
+    const topInvertion = this.side === "top" ? 180 : 0;
 
     switch (this.ReverseSource)
     {
         case 1:
         case 6:
         {
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 180);
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 0);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 180 + topInvertion);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, topInvertion);
 
             break;
         }
 
         case 8:
         {
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 270);
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 0);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 270 + topInvertion);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, topInvertion);
 
             break;
         }
 
         case 15:
         {
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 270);
-            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 180);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 270 + topInvertion);
+            this.DrawSingleReverseArrow(sourcePit, distanceFromSource, 180 + topInvertion);
 
             break;
         }

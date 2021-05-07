@@ -18,6 +18,7 @@ import
     serverStatus,
     ConnectToServer,
     RequestNewSession,
+    JoinSession,
     DisconnectMe,
 } from "./client.js";
 
@@ -50,7 +51,7 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, "Igisoro", "logoText", 3);
-        UI.CreateText(0.7, 0.15, 0, "v.0.11", "versionText", 1);
+        UI.CreateText(0.7, 0.15, 0, "v.0.14", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, "Welcome back, " + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
@@ -335,7 +336,7 @@ onlineMenu.addElementCall
         }, startingFirstTurn, "spinFirstTurnButton", 1);
 
         // Joining
-        UI.CreateButton(0.75, 0.2, 0, 0.4, 0.18, null, "Join game", "joinGameButton", 1.5);
+        UI.CreateButton(0.75, 0.2, 0, 0.4, 0.18, JoinSession, "Join game", "joinGameButton", 1.5);
 
         Subject.AddObserver("incHundreds", function()
         {
@@ -379,15 +380,27 @@ onlineMenu.addElementCall
             Subject.Notify("incHundreds");
         }, (joinCodeHundreds).toString(), "joinCodeHundreds", 3);
 
-        UI.CreateButton(0.75, 0.6, 0, 0.14, 0.14 * 16 / 9,function()
+        UI.CreateButton(0.75, 0.6, 0, 0.14, 0.14 * 16 / 9, function()
         {
             Subject.Notify("incTens");
         }, (joinCodeTens).toString(), "joinCodeTens", 3);
 
-        UI.CreateButton(0.9, 0.6, 0, 0.14, 0.14 * 16 / 9,function()
+        UI.CreateButton(0.9, 0.6, 0, 0.14, 0.14 * 16 / 9, function()
         {
             Subject.Notify("incOnes");
         }, (joinCodeOnes).toString(), "joinCodeOnes", 3);
+
+        UI.CreateText(0.75, 0.78, 0, "This session does not exist!", "invalidCodeText", 1);
+        UI.SwitchElementVisibility("invalidCodeText", false);
+        Subject.AddObserver("invalidCode", function()
+        {
+            UI.SwitchElementVisibility("invalidCodeText", true);
+            setTimeout(function()
+            {
+                if (UI.GetElement("invalidCodeText") == null) return;
+                UI.SwitchElementVisibility("invalidCodeText", false);
+            }, 1500);
+        });
 
         UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
             function()
@@ -409,6 +422,8 @@ lobby.addElementCall
             SetScene("mainmenu");
         });
 
+        gameSettings.joinCode = parameters.sessionCode;
+
         UI.CreateText(0.5, 0.3, 0, "Session code: " + parameters.sessionCode, "codeText", 3);
         UI.CreateText(0.5, 0.6, 0, "Share it with a player you want to play with\n\nWaiting for the opponent to join...", "codeHintText", 1.5);
 
@@ -426,17 +441,65 @@ let gameLayout = new UI_Layout();
 Scenes.set("game", gameLayout);
 gameLayout.addElementCall
 (
-    function()
+    function(parameters)
     {
+        if (parameters.isOnline)
+        {
+            Subject.AddObserver("onlineConnectionLost", function()
+            {
+                SetScene("mainmenu");
+            });
+        }
+
         let gameTableContainer = UI.CreateContainer(gameTableObject, 0, 0, 0);
         VisualElements.set("gameTable", gameTableContainer);
         gameTableContainer.element.PitsFlushTexts();
 
+        if (gameTableObject.opponent != null)
+        {
+            UI.CreateButton(0.175, 0.5, 1, 0.3, 0.09, function()
+            {
+
+            },
+                "vs " + gameTableObject.opponent, "opponentButton", 1);
+
+            Subject.AddObserver("conlost", function()
+            {
+                UI.ChangeElementText(UI.GetElement("opponentButtonText"), "Opponent offline...");
+            });
+
+            Subject.AddObserver("recon", function()
+            {
+                UI.ChangeElementText(UI.GetElement("opponentButtonText"), "vs " + gameTableObject.opponent);
+            });
+        }
+
         Subject.AddObserver("tryingToExit", function()
         {
+            if (gameTableObject.winnerText != null)
+            {
+                if (parameters.isOnline)
+                {
+                    DisconnectMe();
+                    SetScene("onlinemenu");
+                }
+                else
+                {
+                    LocalGameEnd();
+                }
+
+                return;
+            }
+
             UI.RemoveElement("endButton");
             UI.RemoveElement("endButtonText");
-            UI.CreateButton(0.5, 0.5, -1, 0.3, 0.09, LocalGameEnd,
+            UI.CreateButton(0.5, 0.5, -1, 0.3, 0.09,
+                parameters.isOnline ? function()
+                    {
+                        DisconnectMe();
+                        SetScene("onlinemenu");
+                    }
+                    : LocalGameEnd,
                 "Really exit?", "confirmEndButton", 1,
                 function()
                 {

@@ -1,12 +1,19 @@
-export function GameConnector()
+(function(exports)
+{
+
+    exports.GameConnector = GameConnector;
+
+})(typeof exports === 'undefined' ? this['gameConnector'] = {} : exports);
+
+function GameConnector()
 {
     this.Callers =
         {
-            Game: null,
-            GameTable: null,
+            Server: null,
+            Client: null,
         };
 
-    this.InputCallbacks =
+    this.ServerToClientCallbacks =
         {
             StartMove: null,
             SetOccupation: null,
@@ -16,7 +23,7 @@ export function GameConnector()
             GameOver: null,
         };
 
-    this.OutputCallbacks =
+    this.ClientToServerCallbacks =
         {
             StartMove: null,
             SetOccupation: null,

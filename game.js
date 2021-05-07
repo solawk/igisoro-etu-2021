@@ -6,6 +6,51 @@
         return new Game(side, stepTime, field, reverseLevel, LogicConnector);
     }
 
+    exports.FieldToString = function(topOccupations, bottomOccupations)
+    {
+        let fieldString = "";
+
+        for (let i = 0; i < 16; i++)
+        {
+            fieldString += topOccupations[i].toString() + ",";
+        }
+
+        for (let i = 0; i < 16; i++)
+        {
+            fieldString += bottomOccupations[i].toString() + ",";
+        }
+
+        return fieldString;
+    }
+
+    exports.TopOccFromFieldString = function(fieldString)
+    {
+        let topOccupations = [];
+
+        const occupationStrings = fieldString.split(",", 32);
+
+        for (let i = 0; i < 16; i++)
+        {
+            topOccupations.push(parseInt(occupationStrings[i]));
+        }
+
+        return topOccupations;
+    }
+
+    exports.BottomOccFromFieldString = function(fieldString)
+    {
+        let bottomOccupations = [];
+
+        const occupationStrings = fieldString.split(",", 32);
+
+        for (let i = 16; i < 32; i++)
+        {
+            bottomOccupations.push(parseInt(occupationStrings[i]));
+        }
+
+        return bottomOccupations;
+    }
+
 })(typeof exports === 'undefined' ? this['game'] = {} : exports);
 
 function Game(side, stepTime, field, reverseLevel, Connector)
@@ -28,14 +73,14 @@ Game.prototype.StartMove = function(index, side)
 
 Game.prototype.DispatchMove = function(index, side, isDelayed)
 {
-    const delay = isDelayed ? this.stepTime * 100 : 0;
+    const delay = isDelayed ? this.stepTime : 0;
 
     let me = this;
     setTimeout(function()
         {
             me.MakeStep(index, side);
         },
-        delay)
+        delay);
 }
 
 function GetReverseIndexes(index) // Get the indexes of pits that will contain the reverse choice arrows
@@ -101,7 +146,7 @@ Game.prototype.SetOccupation = function(side, index, occupation) // Set a pit's 
         this.handOccupation = occupation;
     }
 
-    this.Connector.OutputCallbacks.SetOccupation.call(this.Connector.Callers.GameTable, side, index, occupation);
+    this.Connector.ServerToClientCallbacks.SetOccupation.call(this.Connector.Callers.Client, side, index, occupation);
 }
 
 Game.prototype.DeltaOccupation = function(side, index, amount) // Modify a pit's occupation by amount
@@ -111,14 +156,14 @@ Game.prototype.DeltaOccupation = function(side, index, amount) // Modify a pit's
 
 Game.prototype.CreateTransfer = function(count, oSide, oIndex, dSide, dIndex)
 {
-    this.Connector.OutputCallbacks.AddTransfer.call(this.Connector.Callers.GameTable, count, oSide, oIndex, dSide, dIndex);
+    this.Connector.ServerToClientCallbacks.AddTransfer.call(this.Connector.Callers.Client, count, oSide, oIndex, dSide, dIndex);
 }
 
 Game.prototype.SwitchTurn = function()
 {
     this.turn = this.GetOtherSide();
 
-    this.Connector.OutputCallbacks.SetTurn.call(this.Connector.Callers.GameTable, this.turn);
+    this.Connector.ServerToClientCallbacks.SetTurn.call(this.Connector.Callers.Client, this.turn);
 }
 
 Game.prototype.NextPit = function() // Select the next pit
@@ -157,7 +202,7 @@ Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
 {
     if (this.CheckGameOver(this.GetOtherSide()))
     {
-        console.log("Game over!");
+        this.Connector.ServerToClientCallbacks.GameOver.call(this.Connector.Callers.Client, this.turn);
         return;
     }
 
@@ -305,7 +350,7 @@ Game.prototype.actionReverseCheck = function()
             //console.log("REVERSIBLE true");
 
             this.SetState("ReverseIdle");
-            this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, this.pit);
+            this.Connector.ServerToClientCallbacks.Reverse.call(this.Connector.Callers.Client, this.pit);
         }
         else
         {
@@ -334,7 +379,7 @@ Game.prototype.actionReverseIdle = function(clickedPit)
     {
         //console.log("REVERSE true");
         this.SetState("ReverseGrab");
-        this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, -1);
+        this.Connector.ServerToClientCallbacks.Reverse.call(this.Connector.Callers.Client, -1);
 
         this.sowPit = this.pit;
 
@@ -345,7 +390,7 @@ Game.prototype.actionReverseIdle = function(clickedPit)
     {
         //console.log("REVERSE false");
         this.SetState("Grab");
-        this.Connector.OutputCallbacks.Reverse.call(this.Connector.Callers.GameTable, -1);
+        this.Connector.ServerToClientCallbacks.Reverse.call(this.Connector.Callers.Client, -1);
 
         this.DispatchMove(null, null, false);
     }
@@ -492,6 +537,13 @@ Game.prototype.actionPutEnd = function()
 Game.prototype.actionEnd = function()
 {
     //console.log("END");
+
+    if (this.CheckGameOver(this.turn))
+    {
+        this.Connector.ServerToClientCallbacks.GameOver.call(this.Connector.Callers.Client, this.GetOtherSide());
+        return;
+    }
+
     this.pit = -1;
     this.sowPit = -1;
     this.normalCaptureMade = false;
@@ -601,3 +653,4 @@ Game.prototype.LoadPitOccupation = function(field)
 
     this.hand = 0;
 }
+

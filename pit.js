@@ -101,13 +101,13 @@ Pit.prototype.draw = function(drawSeedsRoutine, invert)
     this.occupationTextContainer.y = (this.getCenterY() - (centerShiftMultiplier * CanvasSettings.pitSize * (1 / 3))) / CanvasSettings.canvasH;
     this.occupationTextContainer.rotation = centerShiftMultiplier === 1 ? 0 : Math.PI;
 
-    this.drawPit();
+    this.drawPit(invert);
 
     let occupation = this.getOccupation() - this.delayedSeeds;
     drawSeedsRoutine(occupation, this.getCenterX(), this.getCenterY(), this.side !== "hand" ? 1 : 0.6);
 }
 
-Pit.prototype.drawPit = function()
+Pit.prototype.drawPit = function(invert)
 {
     if (this.side !== "hand") // If pit
     {
@@ -117,13 +117,18 @@ Pit.prototype.drawPit = function()
     }
     else if (this.occupation + this.delayedSeeds > 0) // If hand
     {
+        CanvasSettings.context.translate(this.getCenterX(), this.getCenterY());
+        CanvasSettings.context.rotate(!invert ? 0 : Math.PI);
+
         CanvasSettings.context.drawImage(Images.get("handShadow").image,
-            this.getCenterX() - CanvasSettings.pitSize / 4, this.getCenterY() - CanvasSettings.pitSize / 4 - 4,
+            -CanvasSettings.pitSize / 4, -CanvasSettings.pitSize / 4 - 4,
             CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
 
         CanvasSettings.context.drawImage(Images.get("hand").image,
-            this.getCenterX() - CanvasSettings.pitSize / 4 + 4, this.getCenterY() - CanvasSettings.pitSize / 4 - 4,
+            -CanvasSettings.pitSize / 4 + 4, -CanvasSettings.pitSize / 4 - 4,
             CanvasSettings.pitSize / 2, CanvasSettings.pitSize / 2);
+
+        CanvasSettings.context.setTransform(1, 0, 0, 1, 0, 0);
     }
 }
 
