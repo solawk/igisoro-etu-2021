@@ -36,7 +36,7 @@ export function ConnectToServer()
     Subject.Notify("serverPend");
     console.log("Connection pending");
 
-    serverWebsocket = new WebSocket("ws://localhost:8080");
+    serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com:3000");
 
     serverWebsocket.addEventListener("open", function()
     {
