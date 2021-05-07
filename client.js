@@ -15,6 +15,8 @@ import * as Messenger from "./clientMessenger.js";
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
 
+console.log(typeof (process) === "undefined");
+
 function ClickHandler(event)
 {
     const elements = GetElementsSorted(false);
@@ -36,7 +38,16 @@ export function ConnectToServer()
     Subject.Notify("serverPend");
     console.log("Connection pending");
 
-    serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com:5000");
+    if (typeof (process) !== "undefined")
+    {
+        // heroku deploy
+        serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com");
+    }
+    else
+    {
+        // local deploy
+        serverWebsocket = new WebSocket("wss://localhost:5000");
+    }
 
     serverWebsocket.addEventListener("open", function()
     {
@@ -67,7 +78,7 @@ export function RequestNewSession()
     // Side
     msg += "S";
 
-    switch(gameSettings.firstTurn)
+    switch (gameSettings.firstTurn)
     {
         case "first":
             msg += "B";
@@ -137,7 +148,7 @@ export function DisconnectMe()
 
 export function EnterLobby(code)
 {
-    SceneManager.SetScene("lobby", { sessionCode: code, });
+    SceneManager.SetScene("lobby", {sessionCode: code,});
 }
 
 export function LocalGameStart()
@@ -180,7 +191,7 @@ export function LocalGameStart()
 
     gameTable = new GameTable(LogicConnector, "bottom", field, gameSpeed, gameSettings.rotateOccupations, "bottom", null);
     SceneManager.SetGameTableObject(gameTable);
-    SceneManager.SetScene("game", { isOnline: false, });
+    SceneManager.SetScene("game", {isOnline: false,});
 
     LogicConnector.Callers.Server = LocalGame;
     LogicConnector.Callers.Client = gameTable;
@@ -216,7 +227,7 @@ export function OnlineGameStart(side, stepTime, opponent, fieldString, currentTu
 
     gameTable = new GameTable(PresentationConnector, currentTurn, field, stepTime, false, side, opponent);
     SceneManager.SetGameTableObject(gameTable);
-    SceneManager.SetScene("game", { isOnline: true, });
+    SceneManager.SetScene("game", {isOnline: true,});
 
     PresentationConnector.Callers.Client = gameTable;
 
