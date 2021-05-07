@@ -7,7 +7,7 @@ const game = require("./game");
 const Server = new WebSocket.Server({port: process.env.PORT || 5000, clientTracking: true, });
 
 const MonitoringApp = Express();
-const MonitoringAppPort = process.env.PORT || 3000;
+const MonitoringAppPort = process.env.MONITOR_PORT || 3000;
 MonitoringApp.listen(MonitoringAppPort, function()
 {
     console.log("Monitoring app up!");
