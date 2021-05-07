@@ -4,10 +4,10 @@ const Sessions = require("./sessionInstance");
 const Messenger = require("./serverMessenger");
 const game = require("./game");
 
-const Server = new WebSocket.Server({port: 3000, clientTracking: true, });
+const Server = new WebSocket.Server({port: 5000, clientTracking: true, });
 
 const MonitoringApp = Express();
-const MonitoringAppPort = 80;
+const MonitoringAppPort = 3000;
 MonitoringApp.listen(MonitoringAppPort, function()
 {
     console.log("Monitoring app up!");
