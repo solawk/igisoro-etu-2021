@@ -42,6 +42,11 @@ function ProcessMessage(msg, sender)
             Server.ProcessMove(sender, parseInt(params.get("I")), params.get("S") === "B" ? "bottom" : "top");
             break;
 
+        case "P":
+            // Ping
+            //console.log("Pinged");
+            break;
+
         default:
             console.log("Default message?");
             break;

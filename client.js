@@ -40,7 +40,7 @@ export function ConnectToServer()
     serverWebsocket = new WebSocket("wss://igisoro.herokuapp.com");
 
     // local deploy
-    //serverWebsocket = new WebSocket("wss://localhost:5000");
+    //serverWebsocket = new WebSocket("ws://localhost:5000");
 
     serverWebsocket.addEventListener("open", function()
     {
@@ -63,6 +63,19 @@ export function ConnectToServer()
         Messenger.ProcessMessage(message);
     });
 }
+
+function PingServer()
+{
+    Messenger.SendMessage("P");
+}
+
+setInterval(function()
+{
+    if (serverStatus === "con")
+    {
+        PingServer();
+    }
+}, 15000);
 
 export function RequestNewSession()
 {
@@ -241,6 +254,7 @@ export let PresentationConnector = null;
 export const gameSettings =
     {
         playerName: "Player" + Math.floor(100 + Math.random() * 900),
+        language: "en",
         gameSpeed: 4, // 1 = 900 ms per move (very slow), 700...500...300 , 5 = 100 ms per move (very fast)
         reverseLevel: 2,
         rotateOccupations: false, // Turn pits' occupations in local multiplayer games

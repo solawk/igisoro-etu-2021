@@ -51,8 +51,11 @@ function NewSession(code, settings)
 
     newSession.connector.ServerToClientCallbacks.SetTurn = function(turn)
     {
+        const fieldString = game.FieldToString(newSession.game.topOccupations, newSession.game.bottomOccupations);
+
         let msg = "!Aturn?";
         msg += "T" + turn + "?";
+        msg += "F" + fieldString + "?";
 
         Server.SendMessageToPlayersOfSession(code, msg);
     };

@@ -71,6 +71,28 @@ export function ProcessMessage(msg)
                         params.get("T")
                     );
 
+                    const topOcc = game.TopOccFromFieldString(params.get("F"));
+                    const bottomOcc = game.BottomOccFromFieldString(params.get("F"));
+
+                    for (let i = 0; i < 16; i++)
+                    {
+                        Client.PresentationConnector.ServerToClientCallbacks.SetOccupation.call
+                        (
+                            Client.PresentationConnector.Callers.Client,
+                            "top",
+                            i,
+                            topOcc[i]
+                        );
+
+                        Client.PresentationConnector.ServerToClientCallbacks.SetOccupation.call
+                        (
+                            Client.PresentationConnector.Callers.Client,
+                            "bottom",
+                            i,
+                            bottomOcc[i]
+                        );
+                    }
+
                     break;
 
                 case "reverse":

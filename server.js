@@ -298,13 +298,13 @@ function ProcessMove(player, index, side)
 
     if (session == null)
     {
-        console.log("Move received but this player's not playing!");
+        //console.log("Move received but this player's not playing!");
         return;
     }
 
     if (side !== playerSide)
     {
-        console.log("Player tries to move opponent's seeds");
+        //console.log("Player tries to move opponent's seeds");
         return;
     }
 
