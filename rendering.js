@@ -81,7 +81,7 @@ function AdjustCanvas()
     //canvas.style.width = CanvasSettings.canvasW + "px";
     //canvas.style.height = CanvasSettings.canvasH + "px";
 
-    //CanvasSettings.context.scale(DPR, DPR);
+    CanvasSettings.context.scale(DPR, DPR);
 }
 
 // Image loading utils

@@ -34,7 +34,7 @@ UI_Text.prototype.Draw = function(x, y, rotation)
         if (this.shadow)
         {
             CanvasSettings.context.fillStyle = "rgba(0, 0, 0, 1)";
-            CanvasSettings.context.fillText(subtext, -3, size / 3 + (size * 1.2 * (line - (splitText.length - 1) / 2)));
+            CanvasSettings.context.fillText(subtext, -CanvasSettings.standardFontSize / 9, size / 3 + (size * 1.2 * (line - (splitText.length - 1) / 2)));
         }
 
         CanvasSettings.context.fillStyle = this.color;
