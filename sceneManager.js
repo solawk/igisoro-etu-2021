@@ -51,18 +51,19 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, locale[gameSettings.language].gameTitle, "logoText", 3);
-        UI.CreateText(0.7125, 0.15, 0, "v.0.15", "versionText", 1);
+        UI.CreateText(0.7125, 0.15, 0, "v.0.16", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, locale[gameSettings.language].greeting + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
         {
-            UI.ChangeElementText(UI.GetElement("nameText"), "");
-            UI.ChangeElementText(UI.GetElement("nameButtonText"), locale[gameSettings.language].apply);
+            UI.ChangeElementText("nameText", "");
+            UI.ChangeElementText("nameButtonText", locale[gameSettings.language].apply);
         });
         Subject.AddObserver("nameChangeFinish", function()
         {
-            UI.ChangeElementText(UI.GetElement("nameText"), locale[gameSettings.language].greeting + gameSettings.playerName);
-            UI.ChangeElementText(UI.GetElement("nameButtonText"), locale[gameSettings.language].changeName);
+            UI.ChangeElementText("nameText", locale[gameSettings.language].greeting + gameSettings.playerName);
+            UI.ChangeElementText("nameButtonText", locale[gameSettings.language].changeName);
+            localStorage.setItem("playerName", gameSettings.playerName);
         });
 
         UI.CreateButton(0.5, 0.35, 1, 0.17, 0.055,
@@ -109,18 +110,18 @@ mainMenuLayout.addElementCall(
         UI.CreateText(0.15, 0.1, 0, serverStatusReadings[initServerStatus], "serverStatusText", 1);
         Subject.AddObserver("serverPend", function()
         {
-            UI.ChangeElementText(UI.GetElement("serverStatusText"), serverStatusReadings[0]);
-            UI.ChangeElementColor(UI.GetElement("onlineButtonText"), "rgba(128, 128, 128, 1)");
+            UI.ChangeElementText("serverStatusText", serverStatusReadings[0]);
+            UI.ChangeElementColor("onlineButtonText", "rgba(128, 128, 128, 1)");
         });
         Subject.AddObserver("serverCon", function()
         {
-            UI.ChangeElementText(UI.GetElement("serverStatusText"), serverStatusReadings[2]);
-            UI.ChangeElementColor(UI.GetElement("onlineButtonText"), "rgba(255, 255, 255, 1)");
+            UI.ChangeElementText("serverStatusText", serverStatusReadings[2]);
+            UI.ChangeElementColor("onlineButtonText", "rgba(255, 255, 255, 1)");
         });
         Subject.AddObserver("serverDiscon", function()
         {
-            UI.ChangeElementText(UI.GetElement("serverStatusText"), serverStatusReadings[1]);
-            UI.ChangeElementColor(UI.GetElement("onlineButtonText"), "rgba(128, 128, 128, 1)");
+            UI.ChangeElementText("serverStatusText", serverStatusReadings[1]);
+            UI.ChangeElementColor("onlineButtonText", "rgba(128, 128, 128, 1)");
         });
 
         UI.CreateButton(0.15, 0.17, 0, 0.275, 0.06, ConnectToServer, locale[gameSettings.language].reconnect, "reconnectButton", 1);
@@ -136,7 +137,7 @@ mainMenuLayout.addElementCall(
                 gameSettings.language = "en";
             }
 
-            UI.ChangeElementText(UI.GetElement("languageButtonText"), locale[gameSettings.language].language);
+            localStorage.setItem("language", gameSettings.language);
             SetScene("mainmenu");
         }, locale[gameSettings.language].language, "languageButton", 1);
 
@@ -150,7 +151,7 @@ mainMenuLayout.addElementCall(
                     SetScene("onlinemenu");
                 }
             }, locale[gameSettings.language].onlineMult, "onlineButton", 1.5);
-        UI.ChangeElementColor(UI.GetElement("onlineButtonText"), serverStatus === "con" ? "rgba(255, 255, 255, 1)" : "rgba(128, 128, 128, 1)");
+        UI.ChangeElementColor("onlineButtonText", serverStatus === "con" ? "rgba(255, 255, 255, 1)" : "rgba(128, 128, 128, 1)");
 
         UI.CreateButton(0.75, 0.8, 0, 0.4, 0.18,
             function()
@@ -177,31 +178,23 @@ settingsLayout.addElementCall
                 locale[gameSettings.language].speedVeryFast
             ];
 
-        UI.CreateText(0.5, 0.075, 0, locale[gameSettings.language].speedTitle, "speedTitle", 2);
+        UI.CreateText(0.25, 0.125, 0, locale[gameSettings.language].speedTitle, "speedTitle", 2);
 
-        for (let i = 1; i <= 5; i++)
+        Subject.AddObserver("spinspeed", function()
         {
-            Subject.AddObserver("speedSet" + i, function()
+            gameSettings.gameSpeed++;
+            if (gameSettings.gameSpeed > 5) gameSettings.gameSpeed = 1;
+
+            localStorage.setItem("gameSpeed", gameSettings.gameSpeed.toString());
+            UI.ChangeElementText("spinSpeedButtonText", speedNames[gameSettings.gameSpeed - 1]);
+        });
+
+        UI.CreateButton(0.25, 0.3, 0, 0.25, 0.15,
+            function()
             {
-                gameSettings.gameSpeed = i;
-
-                for (let o = 1; o <= 5; o++)
-                {
-                    UI.ChangeElementImage(UI.GetElement("speed" + o + "Mark"), null);
-                }
-
-                UI.ChangeElementImage(UI.GetElement("speed" + i + "Mark"), "checkMark");
-            });
-
-            UI.CreateImage(0.1 + ((i - 1) * 0.2), 0.35, 0, gameSettings.gameSpeed === i ? "checkMark" : null, 0.075, "speed" + i + "Mark");
-
-            UI.CreateButton(0.1 + ((i - 1) * 0.2), 0.23, 0, 0.15, 0.14,
-                function()
-                {
-                    Subject.Notify("speedSet" + i);
-                },
-                speedNames[i - 1], "speed" + i + "Button", 1);
-        }
+                Subject.Notify("spinspeed");
+            },
+            speedNames[gameSettings.gameSpeed - 1], "spinSpeedButton", 1.2);
 
         // Reverse levels stuff
         const revlevelDescriptions =
@@ -211,85 +204,49 @@ settingsLayout.addElementCall
                 locale[gameSettings.language].reversingLevel2
             ];
 
-        UI.CreateText(0.5, 0.475, 0, locale[gameSettings.language].reversingLevelTitle, "revlevelTitle", 2);
-        UI.CreateText(0.8, 0.63, 0, revlevelDescriptions[gameSettings.reverseLevel], "revlevelDesc", 1);
+        UI.CreateText(0.75, 0.125, 0, locale[gameSettings.language].reversingLevelTitle, "revlevelTitle", 2);
+        UI.CreateText(0.75, 0.475, 0, revlevelDescriptions[gameSettings.reverseLevel], "revlevelDesc", 1);
 
-        for (let i = 0; i <= 2; i++)
+        Subject.AddObserver("spinrevlevel", function()
         {
-            Subject.AddObserver("revlevelSet" + i, function()
-            {
-                gameSettings.reverseLevel = i;
+            gameSettings.reverseLevel = (gameSettings.reverseLevel + 1) % 3;
 
-                for (let o = 0; o <= 2; o++)
-                {
-                    UI.ChangeElementImage(UI.GetElement("revlevel" + o + "Mark"), null);
-                }
+            localStorage.setItem("reverseLevel", gameSettings.reverseLevel.toString());
+            UI.ChangeElementText("spinRevLevelButtonText", gameSettings.reverseLevel);
+            UI.ChangeElementText("revlevelDesc", revlevelDescriptions[gameSettings.reverseLevel]);
+        });
 
-                UI.ChangeElementImage(UI.GetElement("revlevel" + i + "Mark"), "checkMark");
-                UI.ChangeElementText(UI.GetElement("revlevelDesc"), revlevelDescriptions[i]);
-            });
-
-            UI.CreateImage(0.1 + (i * 0.2), 0.75, 0, gameSettings.reverseLevel === i ? "checkMark" : null, 0.075, "revlevel" + i + "Mark");
-
-            UI.CreateButton(0.1 + (i * 0.2), 0.63, 0, 0.15, 0.14,
-                function()
-                {
-                    Subject.Notify("revlevelSet" + i);
-                },
-                i, "revlevel" + i + "Button", 2);
-        }
-
-        UI.CreateButton(0.25, 0.9, 0, 0.3, 0.09,
+        UI.CreateButton(0.75, 0.3, 0, 0.1, 0.15,
             function()
             {
-                SetScene("mainmenu");
+                Subject.Notify("spinrevlevel");
             },
-            locale[gameSettings.language].menu, "backToMenuButton", 1);
+            gameSettings.reverseLevel, "spinRevLevelButton", 2);
 
-        UI.CreateButton(0.75, 0.9, 0, 0.3, 0.09,
-            function()
-            {
-                SetScene("uitweaks");
-            },
-            locale[gameSettings.language].ui, "uiTweaksButton", 1);
-    }
-)
-
-let uiTweaks = new UI_Layout();
-Scenes.set("uitweaks", uiTweaks);
-uiTweaks.addElementCall
-(
-    function()
-    {
         Subject.AddObserver("switchRotateOccupations", function()
         {
             gameSettings.rotateOccupations = !gameSettings.rotateOccupations;
 
-            UI.ChangeElementText(UI.GetElement("rotateOccupationsSwitchText"),
+            localStorage.setItem("rotateOccupations", gameSettings.rotateOccupations.toString());
+            UI.ChangeElementText("rotateOccupationsSwitchText",
                 gameSettings.rotateOccupations ? locale[gameSettings.language].enabled : locale[gameSettings.language].disabled);
         });
 
-        UI.CreateText(0.5, 0.175, 0, locale[gameSettings.language].rotateOccupationsTitle, "rotateOccupationsText", 1.5);
-        UI.CreateButton(0.5, 0.3, 0, 0.3, 0.09,
+        UI.CreateText(0.25, 0.55, 0, locale[gameSettings.language].rotateOccupationsTitle, "rotateOccupationsText", 1.5);
+        UI.CreateButton(0.25, 0.75, 0, 0.3, 0.15,
             function()
             {
                 Subject.Notify("switchRotateOccupations");
             },
-            gameSettings.rotateOccupations ? locale[gameSettings.language].enabled : locale[gameSettings.language].disabled, "rotateOccupationsSwitch", 1);
+            gameSettings.rotateOccupations ? locale[gameSettings.language].enabled : locale[gameSettings.language].disabled,
+            "rotateOccupationsSwitch", 1.2);
 
-        UI.CreateButton(0.25, 0.9, 0, 0.3, 0.09,
+        UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
             function()
             {
                 SetScene("mainmenu");
             },
             locale[gameSettings.language].menu, "backToMenuButton", 1);
-
-        UI.CreateButton(0.75, 0.9, 0, 0.3, 0.09,
-            function()
-            {
-                SetScene("settings");
-            },
-            locale[gameSettings.language].settings, "settingsButton", 1);
     }
 );
 
@@ -310,17 +267,17 @@ onlineMenu.addElementCall
             {
                 case "random":
                     gameSettings.firstTurn = "first";
-                    UI.ChangeElementText(UI.GetElement("spinFirstTurnButtonText"), locale[gameSettings.language].me);
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].me);
                     break;
 
                 case "first":
                     gameSettings.firstTurn = "second";
-                    UI.ChangeElementText(UI.GetElement("spinFirstTurnButtonText"), locale[gameSettings.language].opponent);
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].opponent);
                     break;
 
                 case "second":
                     gameSettings.firstTurn = "random";
-                    UI.ChangeElementText(UI.GetElement("spinFirstTurnButtonText"), locale[gameSettings.language].random);
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].random);
                     break;
             }
         });
@@ -363,7 +320,7 @@ onlineMenu.addElementCall
             if (hundreds > 9) hundreds = 1;
             gameSettings.joinCode += hundreds * 100;
 
-            UI.ChangeElementText(UI.GetElement("joinCodeHundredsText"), hundreds.toString());
+            UI.ChangeElementText("joinCodeHundredsText", hundreds.toString());
         });
 
         Subject.AddObserver("incTens", function()
@@ -373,7 +330,7 @@ onlineMenu.addElementCall
             tens = (tens + 1) % 10;
             gameSettings.joinCode += tens * 10;
 
-            UI.ChangeElementText(UI.GetElement("joinCodeTensText"), tens.toString());
+            UI.ChangeElementText("joinCodeTensText", tens.toString());
         });
 
         Subject.AddObserver("incOnes", function()
@@ -383,7 +340,7 @@ onlineMenu.addElementCall
             ones = (ones + 1) % 10;
             gameSettings.joinCode += ones;
 
-            UI.ChangeElementText(UI.GetElement("joinCodeOnesText"), ones.toString());
+            UI.ChangeElementText("joinCodeOnesText", ones.toString());
         });
 
         UI.CreateText(0.75, 0.4, 0, locale[gameSettings.language].sessionCode, "joinCodeHintText", 1);
@@ -395,17 +352,17 @@ onlineMenu.addElementCall
         UI.CreateButton(0.6, 0.6, 0, 0.14, 0.14 * 16 / 9, function()
         {
             Subject.Notify("incHundreds");
-        }, (joinCodeHundreds).toString(), "joinCodeHundreds", 3);
+        }, joinCodeHundreds.toString(), "joinCodeHundreds", 3);
 
         UI.CreateButton(0.75, 0.6, 0, 0.14, 0.14 * 16 / 9, function()
         {
             Subject.Notify("incTens");
-        }, (joinCodeTens).toString(), "joinCodeTens", 3);
+        }, joinCodeTens.toString(), "joinCodeTens", 3);
 
         UI.CreateButton(0.9, 0.6, 0, 0.14, 0.14 * 16 / 9, function()
         {
             Subject.Notify("incOnes");
-        }, (joinCodeOnes).toString(), "joinCodeOnes", 3);
+        }, joinCodeOnes.toString(), "joinCodeOnes", 3);
 
         UI.CreateText(0.75, 0.78, 0, locale[gameSettings.language].invalidCode, "invalidCodeText", 1);
         UI.SwitchElementVisibility("invalidCodeText", false);
@@ -482,12 +439,12 @@ gameLayout.addElementCall
 
             Subject.AddObserver("conlost", function()
             {
-                UI.ChangeElementText(UI.GetElement("opponentButtonText"), locale[gameSettings.language].opponentOffline);
+                UI.ChangeElementText("opponentButtonText", locale[gameSettings.language].opponentOffline);
             });
 
             Subject.AddObserver("recon", function()
             {
-                UI.ChangeElementText(UI.GetElement("opponentButtonText"), locale[gameSettings.language].vs + gameTableObject.opponent);
+                UI.ChangeElementText("opponentButtonText", locale[gameSettings.language].vs + gameTableObject.opponent);
             });
         }
 

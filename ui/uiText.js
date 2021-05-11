@@ -34,11 +34,11 @@ UI_Text.prototype.Draw = function(x, y, rotation)
         if (this.shadow)
         {
             CanvasSettings.context.fillStyle = "rgba(0, 0, 0, 1)";
-            CanvasSettings.context.fillText(subtext, - (size / 10), size / 3 + (size * 1.2 * (line - Math.floor(splitText.length / 2))));
+            CanvasSettings.context.fillText(subtext, -3, size / 3 + (size * 1.2 * (line - (splitText.length - 1) / 2)));
         }
 
         CanvasSettings.context.fillStyle = this.color;
-        CanvasSettings.context.fillText(subtext, 0, size / 3 + (size * 1.2 * (line - Math.floor(splitText.length / 2))));
+        CanvasSettings.context.fillText(subtext, 0, size / 3 + (size * 1.2 * (line - (splitText.length - 1) / 2)));
 
         line++;
     }

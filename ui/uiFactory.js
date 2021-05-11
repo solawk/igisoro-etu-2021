@@ -58,20 +58,23 @@ export function RemoveElement(name)
     Redraw();
 }
 
-export function ChangeElementText(element, text)
+export function ChangeElementText(name, text)
 {
+    const element = GetElement(name);
     element.text = text;
     Redraw();
 }
 
-export function ChangeElementImage(element, image)
+export function ChangeElementImage(name, image)
 {
+    const element = GetElement(name);
     element.imageName = image;
     Redraw();
 }
 
-export function ChangeElementColor(element, color)
+export function ChangeElementColor(name, color)
 {
+    const element = GetElement(name);
     element.color = color;
     Redraw();
 }

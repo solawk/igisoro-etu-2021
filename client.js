@@ -262,4 +262,39 @@ export const gameSettings =
         joinCode: 100
     };
 
+InitLocalStorage();
+
+function InitLocalStorage()
+{
+    const storables =
+        [
+            "playerName",
+            "language",
+            "gameSpeed",
+            "reverseLevel",
+            "rotateOccupations"
+        ];
+
+    const loaded = {};
+
+    for (const item of storables)
+    {
+        let itemValue = localStorage[item];
+
+        if (!itemValue)
+        {
+            localStorage.setItem(item, gameSettings[item]);
+            itemValue = gameSettings[item].toString();
+        }
+
+        loaded[item] = itemValue;
+    }
+
+    gameSettings.playerName = loaded.playerName;
+    gameSettings.language = loaded.language;
+    gameSettings.gameSpeed = parseInt(loaded.gameSpeed);
+    gameSettings.reverseLevel = parseInt(loaded.reverseLevel);
+    gameSettings.rotateOccupations = loaded.rotateOccupations === "true";
+}
+
 SceneManager.SetScene("mainmenu");

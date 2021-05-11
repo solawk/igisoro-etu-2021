@@ -75,11 +75,11 @@ this.locale =
                 speedNormal: "Средне",
                 speedFast: "Быстро",
                 speedVeryFast: "Быстрее",
-                reversingLevelTitle: "Уровень задних ходов",
+                reversingLevelTitle: "Уровень\nзадних ходов",
                 reversingLevel0: "Задние ходы не разрешены",
                 reversingLevel1: "Задние ходы разрешены,\nесли до этого\nпроизошёл захват",
                 reversingLevel2: "Задние ходы разрешены",
-                rotateOccupationsTitle: "Поворачивать количества зёрен\nв локальной игре",
+                rotateOccupationsTitle: "Поворачивать\nколичества зёрен\nв локальной игре",
                 enabled: "Включено",
                 disabled: "Отключено",
 

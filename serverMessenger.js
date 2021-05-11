@@ -27,7 +27,7 @@ function ProcessMessage(msg, sender)
             const sessionExisted = Server.ConnectPlayerToSession(sessionCode, sender, params.get("N"));
             if (!sessionExisted)
             {
-                console.log("This session " + sessionCode + " doesn't exist!");
+                //console.log("This session " + sessionCode + " doesn't exist!");
                 SendMessage("N", sender);
             }
             break;
