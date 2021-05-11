@@ -22,7 +22,7 @@ UI_Container.prototype.Draw = function()
 {
     if (!this.visible) return;
 
-    this.element.Draw(this.x * CanvasSettings.canvasW, this.y * CanvasSettings.canvasH, this.rotation);
+    this.element.Draw(this.x * CanvasSettings.canvasW * CanvasSettings.dpr, this.y * CanvasSettings.canvasH * CanvasSettings.dpr, this.rotation);
 }
 
 UI_Container.prototype.Click = function(x, y)

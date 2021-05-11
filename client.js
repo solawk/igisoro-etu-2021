@@ -177,7 +177,8 @@ export function LocalGameStart()
     }
 
     // Field override
-    /*for (let i = 0; i < 8; i++)
+    /*
+    for (let i = 0; i < 8; i++)
     {
         field.topOccupations[i] = 0;
         field.bottomOccupations[i] = 0;
@@ -185,11 +186,11 @@ export function LocalGameStart()
         field.topOccupations[i + 8] = 0;
         field.bottomOccupations[i + 8] = 0;
     }
-    field.bottomOccupations[0] = 2;
-    field.bottomOccupations[2] = 1;
-    field.topOccupations[5] = 2;
-    field.topOccupations[10] = 1;
-    field.topOccupations[11] = 1;*/
+    field.topOccupations[0] = 2;
+    field.topOccupations[2] = 1;
+    field.bottomOccupations[5] = 2;
+    field.bottomOccupations[10] = 1;
+    field.bottomOccupations[11] = 1;*/
 
     LogicConnector = new GameConnector();
 

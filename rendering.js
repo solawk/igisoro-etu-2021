@@ -5,6 +5,7 @@ window.onresize = Redraw;
 export let CanvasSettings =
     {
         context: ctx,
+        dpr: window.devicePixelRatio || 1,
         canvasW: 0,
         canvasH: 0,
 
@@ -13,8 +14,8 @@ export let CanvasSettings =
         pitBorderOffset: 0,
 
         standardFontSize: 0,
-        deratioW: function(ratio) { return ratio * CanvasSettings.canvasW; },
-        deratioH: function(ratio) { return ratio * CanvasSettings.canvasH; }
+        deratioW: function(ratio) { return ratio * CanvasSettings.canvasW * CanvasSettings.dpr },
+        deratioH: function(ratio) { return ratio * CanvasSettings.canvasH * CanvasSettings.dpr }
     };
 
 AdjustCanvas();
@@ -31,7 +32,9 @@ export function Redraw()
 {
     AdjustCanvas();
 
-    ctx.drawImage(Images.get("wood").image, 0, 0);
+    const bgW = canvas.width > Images.get("wood").image.width ? canvas.width : Images.get("wood").image.width;
+    const bgH = canvas.height > Images.get("wood").image.width * 9 / 16 ? canvas.height : Images.get("wood").image.width * 9 / 16;
+    ctx.drawImage(Images.get("wood").image, 0, 0, bgW, bgH);
 
     const VisualElementsList = GetElementsSorted(true);
 
@@ -61,32 +64,33 @@ function ZCompareNearestFirst(a, b)
 function AdjustCanvas()
 {
     const DPR = window.devicePixelRatio || 1;
+    CanvasSettings.dpr = DPR;
 
     CanvasSettings.canvasW = window.innerWidth * (9 / 10);
     if (CanvasSettings.canvasW * (9 / 16) > window.innerHeight * (9 / 10))
     {
         CanvasSettings.canvasW = window.innerHeight * (16 / 10);
     }
-    //CanvasSettings.canvasW *= 0.8;// WIP
-    CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
-    CanvasSettings.pitSize = CanvasSettings.canvasH / 5;
 
-    CanvasSettings.standardFontSize = CanvasSettings.canvasW / 42;
+    CanvasSettings.canvasH = CanvasSettings.canvasW * (9 / 16);
+    CanvasSettings.pitSize = CanvasSettings.canvasH * CanvasSettings.dpr / 5;
+
+    CanvasSettings.standardFontSize = CanvasSettings.canvasW * CanvasSettings.dpr / 42;
     CanvasSettings.pitGap = CanvasSettings.pitSize / 10;
     CanvasSettings.pitBorderOffset = CanvasSettings.pitSize / 4;
 
-    canvas.width = CanvasSettings.canvasW/* * DPR*/;
-    canvas.height = CanvasSettings.canvasH/* * DPR*/;
+    canvas.width = CanvasSettings.canvasW * CanvasSettings.dpr;
+    canvas.height = CanvasSettings.canvasH * CanvasSettings.dpr;
     canvas.style.borderRadius = (CanvasSettings.canvasW / 50).toString() + "px";
-    //canvas.style.width = CanvasSettings.canvasW + "px";
-    //canvas.style.height = CanvasSettings.canvasH + "px";
+    canvas.style.width = Math.floor(CanvasSettings.canvasW) + "px";
+    canvas.style.height = Math.floor(CanvasSettings.canvasH) + "px";
 
-    CanvasSettings.context.scale(DPR, DPR);
+    //CanvasSettings.context.scale(DPR, DPR);
 }
 
 // Image loading utils
 // Class that loads the src image and raises it's 'loaded' flag when it's loaded, launches LoadingUpdate
-function LoadingImage(src)
+function LoadingImage(src, isJpg)
 {
     this.loaded = false;
 
@@ -97,12 +101,15 @@ function LoadingImage(src)
         resLoadedAmount++;
         LoadingUpdate();
     }.bind(this), false);
-    this.image.src = "images/" + src + ".png";
+
+    const format = isJpg ? ".jpg" : ".png";
+
+    this.image.src = "images/" + src + format;
 
     Images.set(src, this);
 }
 
-new LoadingImage("wood");
+new LoadingImage("wood", true);
 new LoadingImage("pit");
 new LoadingImage("border");
 new LoadingImage("seed");
@@ -112,7 +119,6 @@ new LoadingImage("pitHalf");
 new LoadingImage("pitGradient");
 new LoadingImage("hand");
 new LoadingImage("handShadow");
-new LoadingImage("checkMark");
 
 function LoadingUpdate()
 {
