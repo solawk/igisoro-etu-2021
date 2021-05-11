@@ -79,7 +79,7 @@ function AdjustCanvas()
     canvas.height = CanvasSettings.canvasH * DPR;
     canvas.style.borderRadius = (CanvasSettings.canvasW / 50).toString() + "px";
 
-    CanvasSettings.context.scale(DPR, DPR);
+    //CanvasSettings.context.scale(DPR, DPR);
 }
 
 // Image loading utils
