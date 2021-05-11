@@ -61,6 +61,7 @@ function ZCompareNearestFirst(a, b)
 function AdjustCanvas()
 {
     const DPR = window.devicePixelRatio || 1;
+    console.log(DPR);
 
     CanvasSettings.canvasW = window.innerWidth * (9 / 10);
     if (CanvasSettings.canvasW * (9 / 16) > window.innerHeight * (9 / 10))
@@ -78,8 +79,10 @@ function AdjustCanvas()
     canvas.width = CanvasSettings.canvasW * DPR;
     canvas.height = CanvasSettings.canvasH * DPR;
     canvas.style.borderRadius = (CanvasSettings.canvasW / 50).toString() + "px";
+    canvas.style.width = CanvasSettings.canvasW + "px";
+    canvas.style.height = CanvasSettings.canvasH + "px";
 
-    //CanvasSettings.context.scale(DPR, DPR);
+    CanvasSettings.context.scale(DPR, DPR);
 }
 
 // Image loading utils
