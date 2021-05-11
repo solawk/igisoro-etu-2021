@@ -51,7 +51,7 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, locale[gameSettings.language].gameTitle, "logoText", 3);
-        UI.CreateText(0.7125, 0.15, 0, "v.0.16-004", "versionText", 1);
+        UI.CreateText(0.7125, 0.15, 0, "v.0.16-005", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, locale[gameSettings.language].greeting + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
