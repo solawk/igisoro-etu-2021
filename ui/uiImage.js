@@ -4,10 +4,11 @@ import
     Images
 } from "../rendering.js";
 
-export function UI_Image(image, size)
+export function UI_Image(image, size, callback)
 {
     this.imageName = image;
     this.sizeRatio = size;
+    this.callback = callback;
 }
 
 UI_Image.prototype.Draw = function(x, y, rotation)
@@ -23,6 +24,15 @@ UI_Image.prototype.Draw = function(x, y, rotation)
 
 UI_Image.prototype.Click = function(x, y)
 {
+    if (this.callback)
+    {
+        if (x >= -this.sizeRatio / 2 && y * 9 / 16 >= -this.sizeRatio / 2 && x <= this.sizeRatio / 2 && y * 9 / 16 <= this.sizeRatio / 2)
+        {
+            this.callback();
+            return true;
+        }
+    }
+
     return false;
 }
 

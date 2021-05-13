@@ -64,7 +64,7 @@ Game.prototype.StartMove = function(index, side)
 {
     if (this.state !== "Idle" && this.state !== "ReverseIdle")
     {
-        console.log("Turn in progress!");
+        //console.log("Turn in progress!");
         return;
     }
 
@@ -606,6 +606,25 @@ Game.prototype.CheckGameOver = function(side)
     {
         for (let i = 0; i < 16; i++)
         {
+            // Leapfrog detection
+            if (this.bottomOccupations[i] === 2 && this.bottomOccupations[(i + 1) % 16] === 1)
+            {
+                let restAreEmpty = true;
+                for (let r = 0; r < 14; r++)
+                {
+                    if (this.bottomOccupations[(i + r + 2) % 16] !== 0)
+                    {
+                        restAreEmpty = false;
+                        break;
+                    }
+                }
+
+                if (restAreEmpty)
+                {
+                    return true;
+                }
+            }
+
             if (this.bottomOccupations[i] > 1)
             {
                 return false;
@@ -616,6 +635,24 @@ Game.prototype.CheckGameOver = function(side)
     {
         for (let i = 0; i < 16; i++)
         {
+            if (this.topOccupations[i] === 2 && this.topOccupations[(i + 1) % 16] === 1)
+            {
+                let restAreEmpty = true;
+                for (let r = 0; r < 14; r++)
+                {
+                    if (this.topOccupations[(i + r + 2) % 16] !== 0)
+                    {
+                        restAreEmpty = false;
+                        break;
+                    }
+                }
+
+                if (restAreEmpty)
+                {
+                    return true;
+                }
+            }
+
             if (this.topOccupations[i] > 1)
             {
                 return false;

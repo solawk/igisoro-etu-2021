@@ -20,6 +20,8 @@ import
     RequestNewSession,
     JoinSession,
     DisconnectMe,
+    TutorialGameStart,
+    SetLocalGameOccupations,
 } from "./client.js";
 
 import * as Subject from "./ui/uiSubject.js";
@@ -51,7 +53,7 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, locale[gameSettings.language].gameTitle, "logoText", 3);
-        UI.CreateText(0.7125, 0.15, 0, "v.0.16", "versionText", 1);
+        UI.CreateText(0.7125, 0.15, 0, "v.0.17", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, locale[gameSettings.language].greeting + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
@@ -153,6 +155,13 @@ mainMenuLayout.addElementCall(
             }, locale[gameSettings.language].onlineMult, "onlineButton", 1.5);
         UI.ChangeElementColor("onlineButtonText", serverStatus === "con" ? "rgba(255, 255, 255, 1)" : "rgba(128, 128, 128, 1)");
 
+        UI.CreateButton(0.75, 0.55, 0, 0.4, 0.18,
+            function()
+            {
+                SetScene("tutorialmenu");
+            },
+            locale[gameSettings.language].tutorial, "tutorialMenuButton", 1.5);
+
         UI.CreateButton(0.75, 0.8, 0, 0.4, 0.18,
             function()
             {
@@ -216,7 +225,7 @@ settingsLayout.addElementCall
             UI.ChangeElementText("revlevelDesc", revlevelDescriptions[gameSettings.reverseLevel]);
         });
 
-        UI.CreateButton(0.75, 0.3, 0, 0.1, 0.15,
+        UI.CreateButton(0.75, 0.3, 0, 0.15, 0.15,
             function()
             {
                 Subject.Notify("spinrevlevel");
@@ -240,6 +249,73 @@ settingsLayout.addElementCall
             },
             gameSettings.rotateOccupations ? locale[gameSettings.language].enabled : locale[gameSettings.language].disabled,
             "rotateOccupationsSwitch", 1.2);
+
+        UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
+            function()
+            {
+                SetScene("mainmenu");
+            },
+            locale[gameSettings.language].menu, "backToMenuButton", 1);
+    }
+);
+
+let tutorialMenu = new UI_Layout();
+Scenes.set("tutorialmenu", tutorialMenu);
+tutorialMenu.addElementCall
+(
+    function()
+    {
+        Subject.AddObserver("tutorialS1", function()
+        {
+            TutorialGameStart();
+            SetScene("tutorialS1R1", { field: fields.S1R1});
+        });
+
+        Subject.AddObserver("tutorialS2", function()
+        {
+            TutorialGameStart();
+            SetScene("tutorialS2R1", { field: fields.S2R1});
+        });
+
+        Subject.AddObserver("tutorialS3", function()
+        {
+            TutorialGameStart();
+            SetScene("tutorialS3R1", { field: fields.S3R1});
+        });
+
+        Subject.AddObserver("tutorialS4", function()
+        {
+            TutorialGameStart();
+            SetScene("tutorialS4R1", { field: fields.S4R1});
+        });
+
+        UI.CreateButton(0.25, 0.25, 0, 0.4, 0.15,
+            function()
+            {
+                Subject.Notify("tutorialS1");
+            },
+            locale[gameSettings.language].tutorialS1Title, "tutorial1Button", 1.2);
+
+        UI.CreateButton(0.75, 0.25, 0, 0.4, 0.15,
+            function()
+            {
+                Subject.Notify("tutorialS2");
+            },
+            locale[gameSettings.language].tutorialS2Title, "tutorial2Button", 1.2);
+
+        UI.CreateButton(0.25, 0.5, 0, 0.4, 0.15,
+            function()
+            {
+                Subject.Notify("tutorialS3");
+            },
+            locale[gameSettings.language].tutorialS3Title, "tutorial3Button", 1.2);
+
+        UI.CreateButton(0.75, 0.5, 0, 0.4, 0.15,
+            function()
+            {
+                Subject.Notify("tutorialS4");
+            },
+            locale[gameSettings.language].tutorialS4Title, "tutorial4Button", 1.2);
 
         UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
             function()
@@ -499,3 +575,676 @@ gameLayout.addElementCall
             locale[gameSettings.language].exit, "endButton", 1);
     }
 );
+
+let tutorialS1R1 = new UI_Layout();
+Scenes.set("tutorialS1R1", tutorialS1R1);
+tutorialS1R1.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.3, -6, locale[gameSettings.language].tutorialS1R1B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R1B2P1, "B2P1Text", 1.2);
+            UI.CreateText(0.5, 0.65, -6, locale[gameSettings.language].tutorialS1R1B2P2, "B2P2Text", 1.5);
+            UI.CreateText(0.5, 0.875, -6, locale[gameSettings.language].tutorialS1R1B2P3, "B2P3Text", 1.5);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2P1Text");
+            UI.RemoveElement("B2P2Text");
+            UI.RemoveElement("B2P3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B4");
+            }, "B3Image");
+
+            UI.CreateText(0.5, 0.3, -6, locale[gameSettings.language].tutorialS1R1B3, "B3Text", 1.2);
+        });
+
+        Subject.AddObserver("B4", function()
+        {
+            UI.RemoveElement("B3Image");
+            UI.RemoveElement("B3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B4", 1, function()
+            {
+                Subject.Notify("B5");
+            }, "B4Image");
+
+            UI.CreateText(0.5, 0.5, -6, locale[gameSettings.language].tutorialS1R1B4, "B4Text", 1.2);
+        });
+
+        Subject.AddObserver("B5", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B5", 1, function()
+            {
+                Subject.Notify("B6");
+            }, "B5Image");
+
+            UI.CreateText(0.5, 0.5, -6, locale[gameSettings.language].tutorialS1R1B5, "B5Text", 1.2);
+        });
+
+        Subject.AddObserver("B6", function()
+        {
+            UI.RemoveElement("B5Image");
+            UI.RemoveElement("B5Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, null, "B6Image");
+            UI.CreateImage(0.75, 0.75, -5, null, 0.5, function(){}, "BlockerImage");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R1B6, "B6Text", 1.5);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B6Image");
+            UI.RemoveElement("B6Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("nextRoom-tutorialS1R2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R1A1, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "tutorialS1R2");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS1R2 = new UI_Layout();
+Scenes.set("tutorialS1R2", tutorialS1R2);
+tutorialS1R2.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R2B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.3, -6, locale[gameSettings.language].tutorialS1R2B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, null, "B2Image");
+            UI.CreateImage(0.25, 0.75, -5, null, 0.5, function(){}, "BlockerImage");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R2B2, "B2Text", 1.5);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2Text");
+            UI.RemoveElement("BlockerImage");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("A2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R2A1, "A1Text", 1.2);
+        });
+
+        Subject.AddObserver("A2", function()
+        {
+            UI.RemoveElement("A1Image");
+            UI.RemoveElement("A1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                SetScene("tutorialmenu");
+            }, "A2Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R2A2, "A2Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS2R1 = new UI_Layout();
+Scenes.set("tutorialS2R1", tutorialS2R1);
+tutorialS2R1.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.2, -6, locale[gameSettings.language].tutorialS2R1B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS2R1B2", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.3, 0.15, -6, locale[gameSettings.language].tutorialS2R1B2P1, "B2P1Text", 1.2);
+            UI.CreateText(0.3, 0.5, -6, locale[gameSettings.language].tutorialS2R1B2P2, "B2P2Text", 1.2);
+            UI.CreateText(0.3, 0.8, -6, locale[gameSettings.language].tutorialS2R1B2P3, "B2P3Text", 1.2);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2P1Text");
+            UI.RemoveElement("B2P2Text");
+            UI.RemoveElement("B2P3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS2R1B3", 1, function()
+            {
+                Subject.Notify("B4");
+            }, "B3Image");
+
+            UI.CreateText(0.3, 0.25, -6, locale[gameSettings.language].tutorialS2R1B3, "B3Text", 1.2);
+        });
+
+        Subject.AddObserver("B4", function()
+        {
+            UI.RemoveElement("B3Image");
+            UI.RemoveElement("B3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS2R1B4", 1, null, "B4Image");
+            UI.CreateImage(0.25, 0.75, -5, null, 0.5, function(){}, "BlockerImage");
+
+            UI.CreateText(0.3, 0.5, -6, locale[gameSettings.language].tutorialS2R1B4, "B4Text", 1.2);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+            UI.RemoveElement("BlockerImage");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("nextRoom-tutorialS2R2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R1A1, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "tutorialS2R2");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS2R2 = new UI_Layout();
+Scenes.set("tutorialS2R2", tutorialS2R2);
+tutorialS2R2.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2B2, "B2Text", 1.2);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B4");
+            }, "B3Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2B3, "B3Text", 1.2);
+        });
+
+        Subject.AddObserver("B4", function()
+        {
+            UI.RemoveElement("B3Image");
+            UI.RemoveElement("B3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS2R2B4", 1, null, "B4Image");
+
+            UI.CreateText(0.5, 0.85, -6, locale[gameSettings.language].tutorialS2R2B4, "B4Text", 1.2);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("A2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2A1, "A1Text", 1.2);
+        });
+
+        Subject.AddObserver("A2", function()
+        {
+            UI.RemoveElement("A1Image");
+            UI.RemoveElement("A1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("A3");
+            }, "A2Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2A2, "A2Text", 1.2);
+        });
+
+        Subject.AddObserver("A3", function()
+        {
+            UI.RemoveElement("A2Image");
+            UI.RemoveElement("A2Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                SetScene("tutorialmenu");
+            }, "A3Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2A3, "A3Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS3R1 = new UI_Layout();
+Scenes.set("tutorialS3R1", tutorialS3R1);
+tutorialS3R1.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R1B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS3R1B2", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.5, 0.15, -6, locale[gameSettings.language].tutorialS3R1B2P1, "B2P1Text", 1);
+            UI.CreateText(0.5, 0.5, -6, locale[gameSettings.language].tutorialS3R1B2P2, "B2P2Text", 1);
+            UI.CreateText(0.5, 0.65, -6, locale[gameSettings.language].tutorialS3R1B2P3, "B2P3Text", 1);
+            UI.CreateText(0.5, 0.8, -6, locale[gameSettings.language].tutorialS3R1B2P4, "B2P4Text", 1);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2P1Text");
+            UI.RemoveElement("B2P2Text");
+            UI.RemoveElement("B2P3Text");
+            UI.RemoveElement("B2P4Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS3R1B3", 1, function()
+            {
+                Subject.Notify("B4");
+            }, "B3Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R1B3, "B3Text", 1);
+        });
+
+        Subject.AddObserver("B4", function()
+        {
+            UI.RemoveElement("B3Image");
+            UI.RemoveElement("B3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS3R1B4", 1, null, "B4Image");
+            UI.CreateImage(0.125, 0.75, -5, null, 0.25, function(){}, "Blocker1Image");
+            UI.CreateImage(0.5, 1.64, -5, null, 1, function(){}, "Blocker2Image");
+
+            UI.CreateText(0.3, 0.25, -6, locale[gameSettings.language].tutorialS3R1B4, "B4Text", 1);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+            UI.RemoveElement("Blocker1Image");
+            UI.RemoveElement("Blocker2Image");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("A2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R1A1, "A1Text", 1.2);
+        });
+
+        Subject.AddObserver("A2", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("nextRoom-tutorialS3R2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R1A2, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "tutorialS3R2");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS3R2 = new UI_Layout();
+Scenes.set("tutorialS3R2", tutorialS3R2);
+tutorialS3R2.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS3R2B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R2B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS3R2B2", 1, null, "B2Image");
+            UI.CreateImage(0.5, 1.64, -5, null, 1, function(){}, "BlockerImage");
+
+            UI.CreateText(0.7, 0.85, -6, locale[gameSettings.language].tutorialS3R2B2, "B2Text", 1);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2Text");
+            UI.RemoveElement("BlockerImage");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                SetScene("tutorialmenu");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R2A1, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS4R1 = new UI_Layout();
+Scenes.set("tutorialS4R1", tutorialS4R1);
+tutorialS4R1.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS4R1B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS4R1B2, "B2Text", 1.2);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("B4");
+            }, "B3Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS4R1B3, "B3Text", 1.2);
+        });
+
+        Subject.AddObserver("B4", function()
+        {
+            UI.RemoveElement("B3Image");
+            UI.RemoveElement("B3Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1B4", 1, null, "B4Image");
+            UI.CreateImage(0.5, 0.5, -5, null, 0.6, function(){}, "Blocker1Image");
+            UI.CreateImage(0.5, 1.64, -5, null, 1, function(){}, "Blocker2Image");
+
+            UI.CreateText(0.3, 0.25, -6, locale[gameSettings.language].tutorialS4R1B4, "B4Text", 1);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B4Image");
+            UI.RemoveElement("B4Text");
+            UI.RemoveElement("Blocker1Image");
+            UI.RemoveElement("Blocker2Image");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1A1", 1, function()
+            {
+                Subject.Notify("nextRoom-tutorialS4R2");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.75, -6, locale[gameSettings.language].tutorialS4R1A1, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "tutorialS4R2");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS4R2 = new UI_Layout();
+Scenes.set("tutorialS4R2", tutorialS4R2);
+tutorialS4R2.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, null, "B1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS4R2B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("A1", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
+            {
+                Subject.Notify("nextRoom-tutorialS4R3");
+            }, "A1Image");
+
+            UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS4R2A1, "A1Text", 1.2);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "tutorialS4R3");
+        Subject.Notify("B1");
+    }
+);
+
+let tutorialS4R3 = new UI_Layout();
+Scenes.set("tutorialS4R3", tutorialS4R3);
+tutorialS4R3.addElementCall
+(
+    function(parameters)
+    {
+        Subject.AddObserver("B1", function()
+        {
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1A1", 1, function()
+            {
+                Subject.Notify("B2");
+            }, "B1Image");
+
+            UI.CreateText(0.5, 0.75, -6, locale[gameSettings.language].tutorialS4R3B1, "B1Text", 1.2);
+        });
+
+        Subject.AddObserver("B2", function()
+        {
+            UI.RemoveElement("B1Image");
+            UI.RemoveElement("B1Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1A1", 1, function()
+            {
+                Subject.Notify("B3");
+            }, "B2Image");
+
+            UI.CreateText(0.5, 0.75, -6, locale[gameSettings.language].tutorialS4R3B2, "B2Text", 1.2);
+        });
+
+        Subject.AddObserver("B3", function()
+        {
+            UI.RemoveElement("B2Image");
+            UI.RemoveElement("B2Text");
+
+            UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1A1", 1, function()
+            {
+                SetScene("tutorialmenu");
+            }, "B3Image");
+
+            UI.CreateText(0.5, 0.75, -6, locale[gameSettings.language].tutorialS4R3B3, "B3Text", 1);
+        });
+
+        AddGenericTutorialStuff(parameters.field, "");
+        Subject.Notify("B1");
+    }
+);
+
+function AddGenericTutorialStuff(field, nextRoomName)
+{
+    let gameTableContainer = UI.CreateContainer(gameTableObject, 0, 0, 0);
+    VisualElements.set("gameTable", gameTableContainer);
+    gameTableContainer.element.PitsFlushTexts();
+
+    const topOcc = game.TopOccFromFieldString(field);
+    const bottomOcc = game.BottomOccFromFieldString(field);
+
+    for (let i = 0; i < 16; i++)
+    {
+        gameTableObject.SetPitOccupation
+        (
+            "top",
+            i,
+            topOcc[i]
+        );
+
+        gameTableObject.SetPitOccupation
+        (
+            "bottom",
+            i,
+            bottomOcc[i]
+        );
+    }
+
+    SetLocalGameOccupations(topOcc, bottomOcc);
+
+    gameTableObject.connector.ServerToClientCallbacks.SetTurn = function()
+    {
+        Subject.Notify("A1");
+    }
+
+    gameTableObject.connector.ServerToClientCallbacks.GameOver = function()
+    {
+        Subject.Notify("A1");
+    }
+
+    Subject.AddObserver("nextRoom-" + nextRoomName, function()
+    {
+        TutorialGameStart();
+        SetScene(nextRoomName, { field: fields[nextRoomName.slice(-4)]});
+    });
+
+    UI.CreateButton(0.5, 0.5, 1, 0.3, 0.09, function()
+        {
+        },
+        "", "endButton", 1);
+}

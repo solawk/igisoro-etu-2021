@@ -63,8 +63,7 @@ function ZCompareNearestFirst(a, b)
 
 function AdjustCanvas()
 {
-    const DPR = window.devicePixelRatio || 1;
-    CanvasSettings.dpr = DPR;
+    CanvasSettings.dpr = window.devicePixelRatio || 1;
 
     CanvasSettings.canvasW = window.innerWidth * (9 / 10);
     if (CanvasSettings.canvasW * (9 / 16) > window.innerHeight * (9 / 10))
@@ -119,6 +118,22 @@ new LoadingImage("pitHalf");
 new LoadingImage("pitGradient");
 new LoadingImage("hand");
 new LoadingImage("handShadow");
+
+new LoadingImage("tutorialS1R1B1");
+new LoadingImage("tutorialS1R1B4");
+new LoadingImage("tutorialS1R1B5");
+new LoadingImage("tutorialS1R2B1");
+new LoadingImage("tutorialS2R1B2");
+new LoadingImage("tutorialS2R1B3");
+new LoadingImage("tutorialS2R1B4");
+new LoadingImage("tutorialS2R2B4");
+new LoadingImage("tutorialS3R1B2");
+new LoadingImage("tutorialS3R1B3");
+new LoadingImage("tutorialS3R1B4");
+new LoadingImage("tutorialS3R2B1");
+new LoadingImage("tutorialS3R2B2");
+new LoadingImage("tutorialS4R1B4");
+new LoadingImage("tutorialS4R1A1");
 
 function LoadingUpdate()
 {

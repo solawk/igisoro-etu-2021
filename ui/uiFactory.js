@@ -140,9 +140,9 @@ export function CreateInput(x, y, z, length, height, field, type, maxLength, nam
     return inputContainer;
 }
 
-export function CreateImage(x, y, z, image, size, name)
+export function CreateImage(x, y, z, image, size, callback, name)
 {
-    let imageElement = new UI_Image(image, size);
+    let imageElement = new UI_Image(image, size, callback);
 
     let imageContainer = CreateContainer(imageElement, x, y, z);
     MapElement(name, imageContainer);

@@ -21,7 +21,10 @@ function ClickHandler(event)
 
     for (let element of elements)
     {
-        if (element.Click(event.offsetX, event.offsetY)) break;
+        if (element.Click(event.offsetX, event.offsetY))
+        {
+            break;
+        }
     }
 }
 
@@ -177,7 +180,7 @@ export function LocalGameStart()
     }
 
     // Field override
-    /*
+/*
     for (let i = 0; i < 8; i++)
     {
         field.topOccupations[i] = 0;
@@ -186,11 +189,11 @@ export function LocalGameStart()
         field.topOccupations[i + 8] = 0;
         field.bottomOccupations[i + 8] = 0;
     }
-    field.topOccupations[0] = 2;
-    field.topOccupations[2] = 1;
-    field.bottomOccupations[5] = 2;
-    field.bottomOccupations[10] = 1;
-    field.bottomOccupations[11] = 1;*/
+    field.topOccupations[5] = 1;
+    field.topOccupations[10] = 1;
+    field.topOccupations[4] = 2;
+    field.bottomOccupations[0] = 2;
+    field.bottomOccupations[2] = 1;*/
 
     LogicConnector = new GameConnector();
 
@@ -218,6 +221,46 @@ export function LocalGameEnd()
     gameTable = null;
 
     SceneManager.SetScene("mainmenu");
+}
+
+export function SetLocalGameOccupations(top, bottom)
+{
+    LocalGame.topOccupations = top;
+    LocalGame.bottomOccupations = bottom;
+}
+
+export function TutorialGameStart()
+{
+    const field =
+        {
+            topOccupations: [],
+            bottomOccupations: []
+        };
+
+    for (let i = 0; i < 16; i++)
+    {
+        field.topOccupations[i] = 0;
+        field.bottomOccupations[i] = 0;
+    }
+
+    LogicConnector = new GameConnector();
+
+    LocalGame = game.StartGame("bottom", 300, field, 3, LogicConnector);
+
+    gameTable = new GameTable(LogicConnector, "bottom", field, 300, false, "bottom", null);
+    SceneManager.SetGameTableObject(gameTable);
+
+    LogicConnector.Callers.Server = LocalGame;
+    LogicConnector.Callers.Client = gameTable;
+
+    LogicConnector.ClientToServerCallbacks.StartMove = LocalGame.StartMove;
+
+    LogicConnector.ServerToClientCallbacks.SetOccupation = gameTable.SetPitOccupation;
+    LogicConnector.ServerToClientCallbacks.AddTransfer = gameTable.CreateTransfer;
+    LogicConnector.ServerToClientCallbacks.Reverse = gameTable.SetReverse;
+
+    LogicConnector.ServerToClientCallbacks.SetTurn = function(){};
+    LogicConnector.ServerToClientCallbacks.GameOver = function(){};
 }
 
 export function OnlineGameStart(side, stepTime, opponent, fieldString, currentTurn)
