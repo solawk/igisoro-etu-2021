@@ -17,7 +17,7 @@ UI_Image.prototype.Draw = function(x, y, rotation)
 
     const image = Images.get(this.imageName).image;
 
-    const size = CanvasSettings.canvasW * this.sizeRatio;
+    const size = CanvasSettings.canvasW * this.sizeRatio * CanvasSettings.dpr;
 
     CanvasSettings.context.drawImage(image, x - size / 2, y - size / 2, size, size);
 }
