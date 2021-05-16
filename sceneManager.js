@@ -661,6 +661,7 @@ tutorialS1R1.addElementCall
 
         Subject.AddObserver("A1", function()
         {
+            UI.RemoveElement("BlockerImage");
             UI.RemoveElement("B6Image");
             UI.RemoveElement("B6Text");
 
