@@ -78,7 +78,7 @@ this.locale =
                 tutorialS2R1B1: "A game of Igisoro is won by capturing the opponent's seeds.",
                 tutorialS2R1B2P1: "To capture\ntwo requirements must be met\nat the moment the sowing ends:",
                 tutorialS2R1B2P2: "1. The opponent has\nboth of the opposite pits occupied;",
-                tutorialS2R1B2P3: "2. Your pit the sowing\nhas ended on is inner and was occupied.",
+                tutorialS2R1B2P3: "2. Your pit the sowing\nhas ended on is in the inner row\nand was occupied.",
                 tutorialS2R1B3: "If the requirements are met,\nyou pick the opponent's seeds\nfrom both of the opposite pits\n" +
                     "and start sowing them on your side,\nas if they came from the pit\nthe recent sowing has started from.",
                 tutorialS2R1B4: "Capture the opponent's seeds\nby tapping the designated pit.",
