@@ -1,18 +1,1 @@
-(function(exports)
-{
-
-    exports.Parse = function(msg)
-    {
-        const parts = msg.split("?");
-        const params = new Map;
-        for (const p of parts)
-        {
-            if (p === "") continue;
-
-            params.set(p.slice(0, 1), p.slice(1));
-        }
-
-        return params;
-    }
-
-})(typeof exports === 'undefined' ? this['mesutils'] = {} : exports);
+!function(e){e.Parse=function(e){const s=e.split("?"),t=new Map;for(const e of s)""!==e&&t.set(e.slice(0,1),e.slice(1));return t}}("undefined"==typeof exports?this.mesutils={}:exports);

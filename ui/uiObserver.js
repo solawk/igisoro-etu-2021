@@ -1,13 +1,1 @@
-export function Observer(trigger, callback)
-{
-    this.trigger = trigger;
-    this.callback = callback;
-}
-
-Observer.prototype.notify = function(trigger)
-{
-    if (trigger === this.trigger)
-    {
-        this.callback();
-    }
-}
+export function Observer(t,r){this.trigger=t,this.callback=r}Observer.prototype.notify=function(t){t===this.trigger&&this.callback()};
