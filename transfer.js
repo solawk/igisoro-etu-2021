@@ -10,7 +10,8 @@ export function Transfer(parent, count, originSide, originIndex, destinationSide
     this.dPit.addDelayedSeeds(count);
 
     this.intervalTime = 16; // TO DO
-    this.steps = Math.floor(this.table.stepTime * (1 / 2) / this.intervalTime);
+    const trueStepTime = this.table.stepTime * (this.table.boost ? 0.2 : 1);
+    this.steps = Math.floor(trueStepTime * (1 / 2) / this.intervalTime);
 
     let originPit = this.table.GetPit(originSide, originIndex);
     this.oX = originPit.getCenterX();

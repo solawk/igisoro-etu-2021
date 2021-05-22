@@ -7,7 +7,8 @@ import * as UI from "./ui/uiFactory.js";
 
 import
 {
-    VisualElements
+    VisualElements,
+    Redraw
 } from "./rendering.js";
 
 import
@@ -55,7 +56,7 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, locale[gameSettings.language].gameTitle, "logoText", 3);
-        UI.CreateText(0.7125, 0.15, 0, "v.0.18", "versionText", 1);
+        UI.CreateText(0.7125, 0.15, 0, "v.0.19", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, locale[gameSettings.language].greeting + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
@@ -397,6 +398,7 @@ aiMenu.addElementCall
 
             LocalGameStart(locale[gameSettings.language].AI, aiSide === "bottom" ? "top" : "bottom");
             AttachAI(aiSide, { depth: aiDepth, randomness: aiRandomness });
+            Redraw();
         }, locale[gameSettings.language].play, "aiGameButton", 2);
 
         let currentDifficultyText = "";
@@ -653,6 +655,27 @@ gameLayout.addElementCall
                 SetScene("mainmenu");
             });
         }
+        else if (gameTableObject.opponent != null)
+        {
+            UI.CreateButton(0.825, 0.5, 1, 0.3, 0.09, function()
+            {
+                if (UI.GetElement("boostButtonText").text === locale[gameSettings.language].boost)
+                {
+                    gameTableObject.Boost();
+                    UI.ChangeElementText("boostButtonText", locale[gameSettings.language].boosting);
+                }
+                else
+                {
+                    gameTableObject.Deboost();
+                    UI.ChangeElementText("boostButtonText", locale[gameSettings.language].boost);
+                }
+            }, locale[gameSettings.language].boost, "boostButton", 1);
+
+            Subject.AddObserver("boostOff", function()
+            {
+                UI.ChangeElementText("boostButtonText", locale[gameSettings.language].boost);
+            });
+        }
 
         let gameTableContainer = UI.CreateContainer(gameTableObject, 0, 0, 0);
         VisualElements.set("gameTable", gameTableContainer);
@@ -663,8 +686,7 @@ gameLayout.addElementCall
             UI.CreateButton(0.175, 0.5, 1, 0.3, 0.09, function()
             {
 
-            },
-                locale[gameSettings.language].vs + gameTableObject.opponent, "opponentButton", 1);
+            }, locale[gameSettings.language].vs + gameTableObject.opponent, "opponentButton", 1);
 
             Subject.AddObserver("conlost", function()
             {
@@ -814,7 +836,6 @@ tutorialS1R1.addElementCall
 
         Subject.AddObserver("A1", function()
         {
-            UI.RemoveElement("BlockerImage");
             UI.RemoveElement("B6Image");
             UI.RemoveElement("B6Text");
             UI.RemoveElement("BlockerImage");

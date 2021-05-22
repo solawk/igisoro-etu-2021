@@ -50,6 +50,8 @@ this.locale =
                 medium: "Medium",
                 hard: "Hard",
                 play: "Play",
+                boost: "Speed up",
+                boosting: "Speeding...",
 
                 youWin: "You win!",
                 wins: " wins!",
@@ -188,6 +190,8 @@ this.locale =
                 medium: "Средняя",
                 hard: "Высокая",
                 play: "Играть",
+                boost: "Ускорение",
+                boosting: "Ускорение...",
 
                 youWin: "Вы победили!",
                 wins: " побеждает!",

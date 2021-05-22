@@ -20,6 +20,8 @@ import
     gameSettings
 } from "./client.js";
 
+import * as Subject from "./ui/uiSubject.js";
+
 import * as Bunches from "./bunches.js";
 
 import * as UI from "./ui/uiFactory.js";
@@ -34,6 +36,7 @@ export function GameTable(connector, turn, field, stepTime, rotateOccupations, s
     this.opponent = opponent;
 
     this.stepTime = stepTime;
+    this.boost = false;
     this.turn = turn;
     this.rotateOccupations = rotateOccupations;
     this.handPitIndexPosition = 0;
@@ -115,21 +118,19 @@ GameTable.prototype.Destroy = function()
 
 GameTable.prototype.DrawBorderLines = function()
 {
-    let buttonLocations;
-    if (this.opponent == null)
+    const buttonLocations =
+        [
+            0.35, 0.65,
+        ];
+
+    if (this.opponent != null)
     {
-        buttonLocations =
-            [
-                0.35, 0.65,
-            ];
+        buttonLocations.unshift(0.025, 0.325);
     }
-    else
+
+    if (this.aiSide != null)
     {
-        buttonLocations =
-            [
-                0.025, 0.325,
-                0.35, 0.65,
-            ];
+        buttonLocations.push(0.675, 0.975);
     }
 
     const BorderImage = Images.get("border").image;
@@ -296,6 +297,8 @@ GameTable.prototype.SetPitOccupation = function(side, index, occupation)
 GameTable.prototype.SetTurn = function(turn)
 {
     this.turn = turn;
+    this.boost = false;
+    Subject.Notify("boostOff");
     Redraw();
 }
 
@@ -430,4 +433,16 @@ GameTable.prototype.PitsFlushTexts = function()
     }
 
     this.Hand.flushTextToVisualElements();
+}
+
+GameTable.prototype.Boost = function()
+{
+    this.boost = true;
+    this.connector.Callers.Server.boost = true;
+}
+
+GameTable.prototype.Deboost = function()
+{
+    this.boost = false;
+    this.connector.Callers.Server.boost = false;
 }

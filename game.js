@@ -126,7 +126,7 @@ Game.prototype.DispatchMove = function(index, side, isDelayed)
     }
     else
     {
-        const delay = isDelayed ? this.stepTime : 0;
+        const delay = isDelayed ? (this.boost ? this.stepTime * 0.2 : this.stepTime) : 0;
         setTimeout(function()
             {
                 me.MakeStep(index, side);
@@ -213,8 +213,9 @@ Game.prototype.CreateTransfer = function(count, oSide, oIndex, dSide, dIndex)
 
 Game.prototype.SwitchTurn = function()
 {
-    this.turn = this.GetOtherSide();
+    this.boost = false;
 
+    this.turn = this.GetOtherSide();
     this.Connector.ServerToClientCallbacks.SetTurn.call(this.Connector.Callers.Client, this.turn);
 }
 
@@ -744,6 +745,7 @@ Game.prototype.SetGame = function(field, side, stepTime, reverseLevel)
     this.pit = -1;
     this.sowPit = -1;
     this.stepTime = stepTime;
+    this.boost = false;
     this.reverseLevel = reverseLevel;
     this.normalCaptureMade = false;
     this.turnsMade = 0;
