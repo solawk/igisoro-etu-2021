@@ -293,7 +293,7 @@ function SendMessageToPlayersOfSession(code, msg)
 
 // Discord
 
-DiscordClient.login("ODQ1Mzc2Nzg4MTU0NDE3MTcy.YKgEfA.d_1Kw58Ip_38SMNus6sTW-_LhNw");
+DiscordClient.login(process.env.TOKEN);
 const DiscordChannels = new Map;
 
 DiscordClient.on("ready", function()
