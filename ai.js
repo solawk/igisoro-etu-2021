@@ -122,7 +122,7 @@ AI.prototype.MakeMove = function()
     }
 
     //console.log("Move chances:", moveChances);
-    //console.log("I choose " + pitToChoose + " with " + ((moveChances[pitToChoose] / chanceSum) * 100) + "% chance");
+    console.log("AI: I choose " + pitToChoose + " with a " + ((moveChances[pitToChoose] / chanceSum) * 100) + "% chance");
     //const CalcDuration = Date.now() - CalcStart;
     //console.log("Calculation time: " + CalcDuration + " ms");
 
