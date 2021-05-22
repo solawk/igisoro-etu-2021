@@ -78,24 +78,6 @@ AI.prototype.MakeMove = function()
         }
     }
 
-    let pitToChoose = -1;
-
-    let chanceSum = 0;
-    for (let i = 0; i < 16; i++)
-    {
-        chanceSum += moveChances[i];
-    }
-    let roll = Math.random() * chanceSum;
-    for (let i = 0; i < 16; i++)
-    {
-        roll -= moveChances[i];
-        if (roll <= 0)
-        {
-            pitToChoose = i;
-            break;
-        }
-    }
-
     //console.log("Validities: " + moveValidity);
 
     // Adding randomness
@@ -121,8 +103,28 @@ AI.prototype.MakeMove = function()
         }
     }
 
+    // Choosing
+
+    let pitToChoose = -1;
+
+    let chanceSum = 0;
+    for (let i = 0; i < 16; i++)
+    {
+        chanceSum += moveChances[i];
+    }
+    let roll = Math.random() * chanceSum;
+    for (let i = 0; i < 16; i++)
+    {
+        roll -= moveChances[i];
+        if (roll <= 0)
+        {
+            pitToChoose = i;
+            break;
+        }
+    }
+
     //console.log("Move chances:", moveChances);
-    console.log("AI: I choose " + pitToChoose + " with a " + ((moveChances[pitToChoose] / chanceSum) * 100) + "% chance");
+    //console.log("AI: I choose " + pitToChoose + " with a " + ((moveChances[pitToChoose] / chanceSum) * 100) + "% chance");
     //const CalcDuration = Date.now() - CalcStart;
     //console.log("Calculation time: " + CalcDuration + " ms");
 

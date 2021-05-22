@@ -369,19 +369,19 @@ aiMenu.addElementCall
         UI.CreateButton(0.5, 0.3, 0, 0.3, 0.2, function()
         {
             let aiDepth = 1;
-            let aiRandomness = 90;
+            let aiRandomness = 70;
             let aiSide = "top";
 
             switch (gameSettings.aiDifficulty)
             {
                 case 2:
-                    aiDepth = 2;
-                    aiRandomness = 70;
+                    aiDepth = 3;
+                    aiRandomness = 50;
                     break;
 
                 case 3:
-                    aiDepth = 3;
-                    aiRandomness = 50;
+                    aiDepth = 5;
+                    aiRandomness = 30;
                     break;
             }
 
