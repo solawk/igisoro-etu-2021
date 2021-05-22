@@ -173,7 +173,7 @@ export function LocalGameStart(opponent, playerSide)
     }
     else
     {
-        Log("vs-ai", gameSettings.playerName.toString() + " has entered a session against AI");
+        Log("vs-ai", gameSettings.playerName.toString() + " has entered a session against AI of difficulty " + gameSettings.aiDifficulty);
     }
 
     const gameSpeed = (1 + (5 - gameSettings.gameSpeed)) * 100;
@@ -371,7 +371,7 @@ export const gameSettings =
         rotateOccupations: false, // Turn pits' occupations in local multiplayer games
         firstTurn: "random", // Whether this player has the first turn when entering an online
         joinCode: 100,
-        aiDifficulty: 1, // 1 - Easy (1 depth, 70% randomness), 2 - Medium (3, 50%), 3 - Hard (5, 30%)
+        aiDifficulty: 1,
         aiFirstTurn: "random"
     };
 
