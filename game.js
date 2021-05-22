@@ -51,6 +51,8 @@
         return bottomOccupations;
     }
 
+    exports.GetReverseIndexes = GetReverseIndexes;
+
 })(typeof exports === 'undefined' ? this['game'] = {} : exports);
 
 function Game(side, stepTime, field, reverseLevel, Connector)
@@ -68,19 +70,69 @@ Game.prototype.StartMove = function(index, side)
         return;
     }
 
-    this.MakeStep(index, side);
+    if (this.stepTime === -1)
+    {
+        this.callStack = [];
+        this.callStack.push
+        (
+            {
+                f: this.MakeStep,
+                i: index,
+                s: side
+            }
+        );
+
+        const startTimestamp = Date.now();
+
+        while (this.callStack.length > 0)
+        {
+            if (Date.now() - startTimestamp > 10)
+            {
+                //console.log("ain't right");
+                //console.log(this.state);
+                //console.log(this.topOccupations.slice(8, 16).reverse());
+                //console.log(this.topOccupations.slice(0, 8));
+                //console.log(this.bottomOccupations.slice(0, 8).reverse());
+                //console.log(this.bottomOccupations.slice(8, 16));
+
+                this.state = "Timeout";
+                break;
+            }
+
+            const callback = this.callStack.shift();
+            callback.f.call(this, callback.i, callback.s);
+        }
+    }
+    else
+    {
+        this.MakeStep(index, side);
+    }
 }
 
 Game.prototype.DispatchMove = function(index, side, isDelayed)
 {
-    const delay = isDelayed ? this.stepTime : 0;
+    const me = this;
 
-    let me = this;
-    setTimeout(function()
-        {
-            me.MakeStep(index, side);
-        },
-        delay);
+    if (this.stepTime === -1)
+    {
+        this.callStack.push
+        (
+            {
+                f: this.MakeStep,
+                i: index,
+                s: side
+            }
+        );
+    }
+    else
+    {
+        const delay = isDelayed ? this.stepTime : 0;
+        setTimeout(function()
+            {
+                me.MakeStep(index, side);
+            },
+            delay);
+    }
 }
 
 function GetReverseIndexes(index) // Get the indexes of pits that will contain the reverse choice arrows
@@ -198,11 +250,17 @@ Game.prototype.SetState = function(newState)
     this.state = newState;
 }
 
+Game.prototype.GameOver = function(winner)
+{
+    this.state = "Over";
+    this.Connector.ServerToClientCallbacks.GameOver.call(this.Connector.Callers.Client, winner);
+}
+
 Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
 {
     if (this.CheckGameOver(this.GetOtherSide()))
     {
-        this.Connector.ServerToClientCallbacks.GameOver.call(this.Connector.Callers.Client, this.turn);
+        this.GameOver(this.turn);
         return;
     }
 
@@ -240,6 +298,7 @@ Game.prototype.MakeStep = function(clickedPit, clickedSide) // Making the step
 
         case "Capture":
         {
+            //console.log("capture");
             return this.actionCapture();
         }
 
@@ -342,28 +401,18 @@ Game.prototype.actionOccupationCheck = function(clickedPit, clickedSide)
 Game.prototype.actionReverseCheck = function()
 {
     // Omitting the reverse checks on several conditions
-    if (this.ReverseAllowed() === "possible")
+    if (this.ReverseAllowed() === "possible" && this.CheckReversible(this.turn, this.pit))
     {
-        if (this.CheckReversible(this.turn, this.pit))
-        {
-            // We request an input for the possible reverse move
-            //console.log("REVERSIBLE true");
+        // We request an input for the possible reverse move
+        //console.log("REVERSIBLE true");
 
-            this.SetState("ReverseIdle");
-            this.Connector.ServerToClientCallbacks.Reverse.call(this.Connector.Callers.Client, this.pit);
-        }
-        else
-        {
-            // Cannot reverse, hence doing a regular move
-            //console.log("REVERSIBLE false");
-
-            this.SetState("Grab");
-        }
+        this.SetState("ReverseIdle");
+        this.Connector.ServerToClientCallbacks.Reverse.call(this.Connector.Callers.Client, this.pit);
     }
     else
     {
-        // Not checking the reverse possibility
-        //console.log("REVERSIBLE no check");
+        // Reversing not allowed or not possible there
+        //console.log("REVERSIBLE false");
 
         this.SetState("Grab");
     }
@@ -430,7 +479,7 @@ Game.prototype.actionCapture = function()
 
     this.normalCaptureMade = true;
 
-    if (this.ReverseAllowed() === "possible" && this.CheckReversible(this.turn, this.sowPit))
+    if ((this.ReverseAllowed() === "possible" && this.CheckReversible(this.turn, this.sowPit)) || this.stepTime === -1)
     {
         // Can reverse after capture
         //console.log("REVERSIBLE AFTER CAPTURE true");
@@ -468,21 +517,44 @@ Game.prototype.actionGrab = function(direction)
     this.sowPit = this.pit;
 
     let pitOccupation = this.GetOccupation(this.turn, this.pit);
-
-    this.SetOccupation("hand", 0, pitOccupation);
     this.SetOccupation(this.turn, this.pit, 0);
 
-    this.CreateTransfer(pitOccupation, this.turn, this.pit, "hand", 0);
-
-    if (direction === "f")
+    if (this.stepTime === -1) // If it's the AI running
     {
-        this.NextPit();
-        this.SetState("Put");
+        // Do it quickly as AI
+        for (let i = 0; i < pitOccupation; i++)
+        {
+            if (direction === "f")
+            {
+                this.NextPit();
+            }
+            else
+            {
+                this.PrevPit();
+            }
+
+            this.DeltaOccupation(this.turn, this.pit, 1);
+        }
+
+        this.SetState("PutEnd");
     }
     else
     {
-        this.PrevPit();
-        this.SetState("ReversePut");
+        // Do it with presentation
+        this.SetOccupation("hand", 0, pitOccupation);
+
+        this.CreateTransfer(pitOccupation, this.turn, this.pit, "hand", 0);
+
+        if (direction === "f")
+        {
+            this.NextPit();
+            this.SetState("Put");
+        }
+        else
+        {
+            this.PrevPit();
+            this.SetState("ReversePut");
+        }
     }
 
     this.DispatchMove(null, null, true);
@@ -540,7 +612,7 @@ Game.prototype.actionEnd = function()
 
     if (this.CheckGameOver(this.turn))
     {
-        this.Connector.ServerToClientCallbacks.GameOver.call(this.Connector.Callers.Client, this.GetOtherSide());
+        this.GameOver(this.GetOtherSide());
         return;
     }
 
@@ -549,9 +621,8 @@ Game.prototype.actionEnd = function()
     this.normalCaptureMade = false;
     this.turnsMade++;
 
-    this.SwitchTurn();
-
     this.SetState("Idle");
+    this.SwitchTurn();
 }
 
 Game.prototype.CheckCapture = function(pit, reverseLoops = 0, reverseBonus = 0)

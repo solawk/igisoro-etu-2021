@@ -14,6 +14,7 @@ this.locale =
                 localMult: "Local multiplayer",
                 onlineMult: "Online multiplayer",
                 vsAI: "vs AI",
+                AI: "AI",
                 tutorial: "Tutorial",
                 settings: "Settings",
                 menu: "Menu",
@@ -43,6 +44,15 @@ this.locale =
                 invalidCode: "This session is unavailable!",
                 codeHint: "Share it with a player you want to play with\n\nWaiting for the opponent to join...",
                 leaveGame: "Leave game",
+
+                difficulty: "Difficulty:",
+                easy: "Easy",
+                medium: "Medium",
+                hard: "Hard",
+                play: "Play",
+
+                youWin: "You win!",
+                wins: " wins!",
 
                 vs: "vs ",
                 opponentOffline: "Opponent offline...",
@@ -142,6 +152,7 @@ this.locale =
                 localMult: "Локальная игра",
                 onlineMult: "Игра по сети",
                 vsAI: "Игра против ИИ",
+                AI: "ИИ",
                 tutorial: "Обучение",
                 settings: "Настройки",
                 menu: "Меню",
@@ -171,6 +182,15 @@ this.locale =
                 invalidCode: "Эта сессия недоступна!",
                 codeHint: "Сообщите этот код второму игроку\n\nОжидание подключения оппонента...",
                 leaveGame: "Покинуть игру",
+
+                difficulty: "Сложность:",
+                easy: "Низкая",
+                medium: "Средняя",
+                hard: "Высокая",
+                play: "Играть",
+
+                youWin: "Вы победили!",
+                wins: " побеждает!",
 
                 vs: "против ",
                 opponentOffline: "Отключился...",

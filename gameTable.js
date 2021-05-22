@@ -15,6 +15,11 @@ import
     Redraw
 } from "./rendering.js";
 
+import
+{
+    gameSettings
+} from "./client.js";
+
 import * as Bunches from "./bunches.js";
 
 import * as UI from "./ui/uiFactory.js";
@@ -40,6 +45,8 @@ export function GameTable(connector, turn, field, stepTime, rotateOccupations, s
     this.meIsWinner = false;
     this.winnerTextProgress = 0;
     this.winnerText = null;
+
+    this.aiSide = null;
 
     // Pits
     this.Pits = [];
@@ -72,7 +79,7 @@ GameTable.prototype.Draw = function(x, y)
     // Pits
     for (let i = 0; i < this.Pits.length; i++)
     {
-        this.Pits[i].draw(this.DrawSeeds, this.turn !== this.side && this.rotateOccupations);
+        this.Pits[i].draw(this.DrawSeeds, this.turn !== this.side && this.rotateOccupations && this.aiSide === null);
     }
 
     this.Hand.draw(this.DrawSeeds, this.turn !== this.side && this.rotateOccupations);
@@ -92,6 +99,8 @@ GameTable.prototype.Click = function(x, y)
     {
         if (this.Pits[i].isClicked(x, y))
         {
+            if (this.aiSide != null && this.Pits[i].side === this.aiSide) continue;
+
             this.connector.ClientToServerCallbacks.StartMove.call(this.connector.Callers.Server, this.Pits[i].index, this.Pits[i].side);
             return true;
         }
@@ -192,7 +201,8 @@ GameTable.prototype.DesignateWinner = function(winnerSide)
     this.meIsWinner = winnerSide === this.side;
     this.winnerTextProgress = 40;
 
-    const text = this.meIsWinner ? "You win!" : (this.opponent != null ? this.opponent  + " wins!" : "You win!");
+    const text = this.meIsWinner ? locale[gameSettings.language].youWin :
+        (this.opponent != null ? this.opponent  + locale[gameSettings.language].wins : locale[gameSettings.language].youWin);
     this.winnerText = UI.CreateText(0.5, 0.5 + 0.6 * (this.meIsWinner ? 1 : -1), -1, text, "winnerText", 2);
     if (this.opponent == null && this.rotateOccupations && this.turn !== this.side)
     {

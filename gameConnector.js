@@ -15,7 +15,6 @@ function GameConnector()
 
     this.ServerToClientCallbacks =
         {
-            StartMove: null,
             SetOccupation: null,
             AddTransfer: null,
             Reverse: null,
@@ -26,10 +25,16 @@ function GameConnector()
     this.ClientToServerCallbacks =
         {
             StartMove: null,
-            SetOccupation: null,
-            AddTransfer: null,
-            Reverse: null,
-            SetTurn: null,
-            GameOver: null,
         };
+}
+
+GameConnector.prototype.Dummy = function()
+{
+    this.ServerToClientCallbacks.SetOccupation = function() {};
+    this.ServerToClientCallbacks.AddTransfer = function() {};
+    this.ServerToClientCallbacks.Reverse = function() {};
+    this.ServerToClientCallbacks.SetTurn = function() {};
+    this.ServerToClientCallbacks.GameOver = function() {};
+
+    this.ClientToServerCallbacks.StartMove = function() {};
 }

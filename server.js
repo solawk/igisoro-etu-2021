@@ -1,74 +1,22 @@
 const WebSocket = require("ws");
-//const Express = require("express");
+const Discord = require("discord.js");
+const DiscordClient = new Discord.Client();
+
 const Sessions = require("./sessionInstance");
 const Messenger = require("./serverMessenger");
 const game = require("./game");
 
-const Server = new WebSocket.Server({port: process.env.PORT || 5000, clientTracking: true, });
+const Server = new WebSocket.Server({port: process.env.PORT || 5000, clientTracking: true,});
 
-// only in local
-/*
-const MonitoringApp = Express();
-const MonitoringAppPort = process.env.PORT || 3000;
-MonitoringApp.listen(MonitoringAppPort, function()
-{
-    console.log("Monitoring app up!");
-});
-
-MonitoringApp.get("/", function(request, response)
-{
-    let content = "<h1>Existing sessions:</h1><table border='1'>";
-
-    content += "<tr>";
-
-    content += "<td><h2>Code</h2></td>";
-    content += "<td><h2>Bottom Name</h2></td>";
-    content += "<td><h2>Top Name</h2></td>";
-    content += "<td><h2>Status</h2></td>";
-    content += "<td><h2>Step Time (ms)</h2></td>";
-    content += "<td><h2>Reverse Level</h2></td>";
-
-    content += "</tr>";
-
-    for (const [c, s] of Sessions.SessionsMap)
-    {
-        const code = c;
-        const p1Name = s.bottomName;
-        const p2Name = s.topName;
-        const status = s.status;
-        const stepTime = s.settings.stepTime;
-        const reverseLevel = s.settings.reverseLevel;
-
-        content += "<tr>";
-
-        content += "<td>" + code + "</td>";
-        content += "<td>" + p1Name + "</td>";
-        content += "<td>" + p2Name + "</td>";
-        content += "<td>" + status + "</td>";
-        content += "<td>" + stepTime + "</td>";
-        content += "<td>" + reverseLevel + "</td>";
-
-        content += "</tr>";
-    }
-
-    content += "</table>";
-
-    content += "side: " + DefaultSessionSettings.side;
-    content += "stepTime: " + DefaultSessionSettings.stepTime;
-    content += "field:<br>";
-    for (let i = 0; i < 16; i++)
-    {
-        content += "top: " + DefaultSessionSettings.field.topOccupations[i] + " ";
-        content += "bottom: " + DefaultSessionSettings.field.bottomOccupations[i] + "<br>";
-    }
-
-    response.send(content);
-});
-*/
+const ClientMap = [];
 
 Server.on("connection", function(ws)
 {
     console.log("Client connected");
+
+    // Add to the client map
+    ClientMap.push({socket: ws, connectionTimestamp: Date.now()});
+
     ws.on("message", function(message)
     {
         Messenger.Receive(message, ws);
@@ -76,6 +24,20 @@ Server.on("connection", function(ws)
 
     ws.on("close", function()
     {
+        // Find the client in the map and calculate the connection time, delete from the map
+        for (const client of ClientMap)
+        {
+            if (client.socket === ws)
+            {
+                const connectionDuration = Date.now() - client.connectionTimestamp;
+                const durationSecondsString = Math.ceil(connectionDuration / 1000).toString();
+                LogDiscord("login-duration", durationSecondsString);
+
+                ClientMap.splice(ClientMap.indexOf(client), 1);
+                break;
+            }
+        }
+
         DisconnectPlayerFromSessions(ws);
     });
 });
@@ -135,7 +97,7 @@ function CreateNewSession(stepTime, reverseLevel)
     Object.assign(settings, DefaultSessionSettings);
 
     settings.side = "bottom";
-    settings.stepTime = (1 + (5 - stepTime) * 2) * 100;
+    settings.stepTime = (1 + (5 - stepTime)) * 100;
     settings.reverseLevel = reverseLevel;
 
     Sessions.NewSession(code, settings);
@@ -327,4 +289,29 @@ function SendMessageToPlayersOfSession(code, msg)
     {
         Messenger.Send(msg, session.topPlayer);
     }
+}
+
+// Discord
+
+DiscordClient.login("ODQ1Mzc2Nzg4MTU0NDE3MTcy.YKgEfA.d_1Kw58Ip_38SMNus6sTW-_LhNw");
+const DiscordChannels = new Map;
+
+DiscordClient.on("ready", function()
+{
+    console.log("Discord connected!");
+
+    for (const [snowflake, channel] of DiscordClient.channels.cache)
+    {
+        DiscordChannels.set(channel.name, channel);
+    }
+});
+
+module.exports.LogDiscord = LogDiscord;
+
+function LogDiscord(channelName, msg)
+{
+    const channel = DiscordChannels.get(channelName);
+
+    if (!channel) console.log("Invalid channel name: " + channelName);
+    channel.send(msg);
 }

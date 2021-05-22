@@ -12,6 +12,11 @@ import * as SceneManager from "./sceneManager.js";
 import * as Subject from "./ui/uiSubject.js";
 import * as Messenger from "./clientMessenger.js";
 
+import
+{
+    AI
+} from "./ai.js";
+
 const canvas = document.getElementById("gameCanvas");
 canvas.onclick = ClickHandler;
 
@@ -160,9 +165,18 @@ export function EnterLobby(code)
     SceneManager.SetScene("lobby", {sessionCode: code,});
 }
 
-export function LocalGameStart()
+export function LocalGameStart(opponent, playerSide)
 {
-    const gameSpeed = (1 + (5 - gameSettings.gameSpeed) * 2) * 100;
+    if (opponent == null)
+    {
+        Log("local-multiplayer", gameSettings.playerName.toString() + " has entered a local session");
+    }
+    else
+    {
+        Log("vs-ai", gameSettings.playerName.toString() + " has entered a session against AI");
+    }
+
+    const gameSpeed = (1 + (5 - gameSettings.gameSpeed)) * 100;
 
     const field =
         {
@@ -180,8 +194,8 @@ export function LocalGameStart()
     }
 
     // Field override
-/*
-    for (let i = 0; i < 8; i++)
+
+    /*for (let i = 0; i < 8; i++)
     {
         field.topOccupations[i] = 0;
         field.bottomOccupations[i] = 0;
@@ -189,17 +203,21 @@ export function LocalGameStart()
         field.topOccupations[i + 8] = 0;
         field.bottomOccupations[i + 8] = 0;
     }
-    field.topOccupations[5] = 1;
+    field.topOccupations[3] = 5;
+    field.topOccupations[12] = 6;
+    field.topOccupations[5] = 2;
     field.topOccupations[10] = 1;
-    field.topOccupations[4] = 2;
+    field.bottomOccupations[4] = 1;
+    field.bottomOccupations[6] = 2;
     field.bottomOccupations[0] = 2;
     field.bottomOccupations[2] = 1;*/
 
     LogicConnector = new GameConnector();
 
     LocalGame = game.StartGame("bottom", gameSpeed, field, gameSettings.reverseLevel, LogicConnector);
+    //LocalGame = game.StartGame("bottom", gameSpeed, field, 3, LogicConnector); // REVERSE TEST
 
-    gameTable = new GameTable(LogicConnector, "bottom", field, gameSpeed, gameSettings.rotateOccupations, "bottom", null);
+    gameTable = new GameTable(LogicConnector, "bottom", field, gameSpeed, gameSettings.rotateOccupations, playerSide ? playerSide : "bottom", opponent);
     SceneManager.SetGameTableObject(gameTable);
     SceneManager.SetScene("game", {isOnline: false,});
 
@@ -215,12 +233,53 @@ export function LocalGameStart()
     LogicConnector.ServerToClientCallbacks.GameOver = gameTable.DesignateWinner;
 }
 
+export function AttachAI(side, settings)
+{
+    AIAgent = new AI(LogicConnector, side, settings);
+    // funni test
+    //const AIAgent2 = new AI(LogicConnector, side === "top" ? "bottom" : "top", settings);
+
+    LogicConnector.ServerToClientCallbacks.SetTurn = function(turn)
+    {
+        gameTable.SetTurn(turn);
+        AIAgent.React();
+        //AIAgent2.React();
+    }
+
+    LogicConnector.ServerToClientCallbacks.Reverse = function(src)
+    {
+        gameTable.SetReverse(src);
+
+        if (src !== -1)
+        {
+            AIAgent.React();
+            //AIAgent2.React();
+        }
+    }
+}
+
 export function LocalGameEnd()
 {
     LocalGame = null;
     gameTable = null;
 
-    SceneManager.SetScene("mainmenu");
+    const wasvsAI = AIAgent != null;
+    AIAgent = null;
+
+    LogicConnector.ServerToClientCallbacks.SetOccupation = function() {};
+    LogicConnector.ServerToClientCallbacks.AddTransfer = function() {};
+    LogicConnector.ServerToClientCallbacks.SetTurn = function() {};
+    LogicConnector.ServerToClientCallbacks.Reverse = function() {};
+    LogicConnector.ServerToClientCallbacks.GameOver = function() {};
+
+    if (!wasvsAI)
+    {
+        SceneManager.SetScene("mainmenu");
+    }
+    else
+    {
+        SceneManager.SetScene("aimenu");
+    }
 }
 
 export function SetLocalGameOccupations(top, bottom)
@@ -265,6 +324,8 @@ export function TutorialGameStart()
 
 export function OnlineGameStart(side, stepTime, opponent, fieldString, currentTurn)
 {
+    Log("online-multiplayer", gameSettings.playerName.toString() + " has entered an online session");
+
     const field =
         {
             topOccupations: game.TopOccFromFieldString(fieldString),
@@ -290,8 +351,14 @@ export function OnlineGameStart(side, stepTime, opponent, fieldString, currentTu
     PresentationConnector.ServerToClientCallbacks.GameOver = gameTable.DesignateWinner;
 }
 
+export function Log(channelName, msg)
+{
+    Messenger.SendMessage("LC" + channelName + "?M" + msg + "?");
+}
+
 export let LocalGame = null;
 let gameTable = null;
+let AIAgent = null;
 let LogicConnector = null;
 export let PresentationConnector = null;
 
@@ -299,11 +366,13 @@ export const gameSettings =
     {
         playerName: "Player" + Math.floor(100 + Math.random() * 900),
         language: "en",
-        gameSpeed: 4, // 1 = 900 ms per move (very slow), 700...500...300 , 5 = 100 ms per move (very fast)
+        gameSpeed: 3, // 1 = 500 ms per move (very slow), 400...300...200 , 5 = 100 ms per move (very fast)
         reverseLevel: 2,
         rotateOccupations: false, // Turn pits' occupations in local multiplayer games
-        firstTurn: "random", // Whether this player has the first turn when entering an online or a vs AI game
-        joinCode: 100
+        firstTurn: "random", // Whether this player has the first turn when entering an online
+        joinCode: 100,
+        aiDifficulty: 1, // 1 - Easy (1 depth, 70% randomness), 2 - Medium (3, 50%), 3 - Hard (5, 30%)
+        aiFirstTurn: "random"
     };
 
 InitLocalStorage();
@@ -316,7 +385,8 @@ function InitLocalStorage()
             "language",
             "gameSpeed",
             "reverseLevel",
-            "rotateOccupations"
+            "rotateOccupations",
+            "aiDifficulty"
         ];
 
     const loaded = {};
@@ -339,6 +409,7 @@ function InitLocalStorage()
     gameSettings.gameSpeed = parseInt(loaded.gameSpeed);
     gameSettings.reverseLevel = parseInt(loaded.reverseLevel);
     gameSettings.rotateOccupations = loaded.rotateOccupations === "true";
+    gameSettings.aiDifficulty = parseInt(loaded.aiDifficulty);
 }
 
 SceneManager.SetScene("mainmenu");

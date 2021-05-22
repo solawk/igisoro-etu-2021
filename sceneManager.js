@@ -22,6 +22,8 @@ import
     DisconnectMe,
     TutorialGameStart,
     SetLocalGameOccupations,
+    AttachAI,
+    Log
 } from "./client.js";
 
 import * as Subject from "./ui/uiSubject.js";
@@ -53,7 +55,7 @@ mainMenuLayout.addElementCall(
     function()
     {
         UI.CreateText(0.5, 0.15, 0, locale[gameSettings.language].gameTitle, "logoText", 3);
-        UI.CreateText(0.7125, 0.15, 0, "v.0.17", "versionText", 1);
+        UI.CreateText(0.7125, 0.15, 0, "v.0.18", "versionText", 1);
 
         UI.CreateText(0.5, 0.275, 0, locale[gameSettings.language].greeting + gameSettings.playerName, "nameText", 1);
         Subject.AddObserver("nameChangeStart", function()
@@ -126,7 +128,8 @@ mainMenuLayout.addElementCall(
             UI.ChangeElementColor("onlineButtonText", "rgba(128, 128, 128, 1)");
         });
 
-        UI.CreateButton(0.15, 0.17, 0, 0.275, 0.06, ConnectToServer, locale[gameSettings.language].reconnect, "reconnectButton", 1);
+        UI.CreateButton(0.15, 0.17, 0, 0.275, 0.06,
+            ConnectToServer, locale[gameSettings.language].reconnect, "reconnectButton", 1);
 
         UI.CreateButton(0.85, 0.17, 0, 0.16, 0.06, function()
         {
@@ -158,16 +161,23 @@ mainMenuLayout.addElementCall(
         UI.CreateButton(0.75, 0.55, 0, 0.4, 0.18,
             function()
             {
-                SetScene("tutorialmenu");
+                SetScene("aimenu");
             },
-            locale[gameSettings.language].tutorial, "tutorialMenuButton", 1.5);
+            locale[gameSettings.language].vsAI, "vsaiButton", 1.5);
 
         UI.CreateButton(0.75, 0.8, 0, 0.4, 0.18,
             function()
             {
+                SetScene("tutorialmenu");
+            },
+            locale[gameSettings.language].tutorial, "tutorialMenuButton", 1.5);
+
+        UI.CreateButton(0.15, 0.3, 0, 0.275, 0.15,
+            function()
+            {
                 SetScene("settings");
             },
-            locale[gameSettings.language].settings, "settingsButton", 1.5);
+            locale[gameSettings.language].settings, "settingsButton", 1.25);
     }
 );
 
@@ -316,6 +326,149 @@ tutorialMenu.addElementCall
                 Subject.Notify("tutorialS4");
             },
             locale[gameSettings.language].tutorialS4Title, "tutorial4Button", 1.2);
+
+        UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
+            function()
+            {
+                SetScene("mainmenu");
+            },
+            locale[gameSettings.language].menu, "backToMenuButton", 1);
+    }
+);
+
+let aiMenu = new UI_Layout();
+Scenes.set("aimenu", aiMenu);
+aiMenu.addElementCall
+(
+    function()
+    {
+        Subject.AddObserver("spindifficulty", function()
+        {
+            switch (gameSettings.aiDifficulty)
+            {
+                case 1:
+                    gameSettings.aiDifficulty = 2;
+                    UI.ChangeElementText("spinDifficultyButtonText", locale[gameSettings.language].medium);
+                    break;
+
+                case 2:
+                    gameSettings.aiDifficulty = 3;
+                    UI.ChangeElementText("spinDifficultyButtonText", locale[gameSettings.language].hard);
+                    break;
+
+                case 3:
+                    gameSettings.aiDifficulty = 1;
+                    UI.ChangeElementText("spinDifficultyButtonText", locale[gameSettings.language].easy);
+                    break;
+            }
+
+            localStorage.setItem("aiDifficulty", gameSettings.aiDifficulty.toString());
+        });
+
+        UI.CreateButton(0.5, 0.3, 0, 0.3, 0.2, function()
+        {
+            let aiDepth = 1;
+            let aiRandomness = 70;
+            let aiSide = "top";
+
+            switch (gameSettings.aiDifficulty)
+            {
+                case 2:
+                    aiDepth = 3;
+                    aiRandomness = 50;
+                    break;
+
+                case 3:
+                    aiDepth = 5;
+                    aiRandomness = 30;
+                    break;
+            }
+
+            switch (gameSettings.aiFirstTurn)
+            {
+                case "second":
+                    aiSide = "bottom";
+                    break;
+
+                case "random":
+                    aiSide = Math.random() < 0.5 ? "bottom" : "top";
+                    break;
+            }
+
+            LocalGameStart(locale[gameSettings.language].AI, aiSide === "bottom" ? "top" : "bottom");
+            AttachAI(aiSide, { depth: aiDepth, randomness: aiRandomness });
+        }, locale[gameSettings.language].play, "aiGameButton", 2);
+
+        let currentDifficultyText = "";
+
+        switch (gameSettings.aiDifficulty)
+        {
+            case 1:
+                currentDifficultyText = locale[gameSettings.language].easy;
+                break;
+
+            case 2:
+                currentDifficultyText = locale[gameSettings.language].medium;
+                break;
+
+            case 3:
+                currentDifficultyText = locale[gameSettings.language].hard;
+                break;
+        }
+
+        UI.CreateText(0.2, 0.5, 0, locale[gameSettings.language].difficulty, "difficultyTitle", 2);
+
+        UI.CreateButton(0.2, 0.65, 0, 0.3, 0.15,
+            function()
+            {
+                Subject.Notify("spindifficulty");
+            },
+            currentDifficultyText, "spinDifficultyButton", 1.5);
+
+        Subject.AddObserver("spinfirstturn", function()
+        {
+            switch (gameSettings.aiFirstTurn)
+            {
+                case "random":
+                    gameSettings.aiFirstTurn = "first";
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].me);
+                    break;
+
+                case "first":
+                    gameSettings.aiFirstTurn = "second";
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].AI);
+                    break;
+
+                case "second":
+                    gameSettings.aiFirstTurn = "random";
+                    UI.ChangeElementText("spinFirstTurnButtonText", locale[gameSettings.language].random);
+                    break;
+            }
+        });
+
+        UI.CreateText(0.8, 0.5, 0, locale[gameSettings.language].firstTurnTitle, "firstTurnText", 2);
+
+        let startingFirstTurn = "";
+
+        switch (gameSettings.aiFirstTurn)
+        {
+            case "random":
+                startingFirstTurn = locale[gameSettings.language].random;
+                break;
+
+            case "first":
+                startingFirstTurn = locale[gameSettings.language].me;
+                break;
+
+            case "second":
+                startingFirstTurn = locale[gameSettings.language].AI;
+                break;
+        }
+
+        UI.CreateButton(0.8, 0.65, 0, 0.3, 0.15, function()
+        {
+            Subject.Notify("spinfirstturn");
+        }, startingFirstTurn, "spinFirstTurnButton", 1.5);
 
         UI.CreateButton(0.5, 0.9, 0, 0.3, 0.09,
             function()
@@ -664,6 +817,7 @@ tutorialS1R1.addElementCall
             UI.RemoveElement("BlockerImage");
             UI.RemoveElement("B6Image");
             UI.RemoveElement("B6Text");
+            UI.RemoveElement("BlockerImage");
 
             UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
             {
@@ -727,6 +881,7 @@ tutorialS1R2.addElementCall
             UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
             {
                 SetScene("tutorialmenu");
+                Log("tutorial-completions", gameSettings.playerName.toString() + " has completed the tutorial 1");
             }, "A2Image");
 
             UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS1R2A2, "A2Text", 1.2);
@@ -899,6 +1054,7 @@ tutorialS2R2.addElementCall
             UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
             {
                 SetScene("tutorialmenu");
+                Log("tutorial-completions", gameSettings.playerName.toString() + " has completed the tutorial 2");
             }, "A3Image");
 
             UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS2R2A3, "A3Text", 1.2);
@@ -1038,6 +1194,7 @@ tutorialS3R2.addElementCall
             UI.CreateImage(0.5, 0.5, -5, "tutorialS1R1B1", 1, function()
             {
                 SetScene("tutorialmenu");
+                Log("tutorial-completions", gameSettings.playerName.toString() + " has completed the tutorial 3");
             }, "A1Image");
 
             UI.CreateText(0.5, 0.25, -6, locale[gameSettings.language].tutorialS3R2A1, "A1Text", 1.2);
@@ -1190,6 +1347,7 @@ tutorialS4R3.addElementCall
             UI.CreateImage(0.5, 0.5, -5, "tutorialS4R1A1", 1, function()
             {
                 SetScene("tutorialmenu");
+                Log("tutorial-completions", gameSettings.playerName.toString() + " has completed the tutorial 4");
             }, "B3Image");
 
             UI.CreateText(0.5, 0.75, -6, locale[gameSettings.language].tutorialS4R3B3, "B3Text", 1);

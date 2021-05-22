@@ -42,6 +42,11 @@ function ProcessMessage(msg, sender)
             Server.ProcessMove(sender, parseInt(params.get("I")), params.get("S") === "B" ? "bottom" : "top");
             break;
 
+        case "L":
+            // Logging
+            Server.LogDiscord(params.get("C"), params.get("M"));
+            break;
+
         case "P":
             // Ping
             //console.log("Pinged");

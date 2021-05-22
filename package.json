@@ -2,6 +2,7 @@
   "name": "IgisoroJS",
   "version": "1.0.0",
   "dependencies": {
+    "discord.js": "^12.5.3",
     "express": "^4.17.1",
     "ws": "^7.4.5"
   }

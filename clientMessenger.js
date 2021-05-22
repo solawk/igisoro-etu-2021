@@ -120,7 +120,14 @@ export function ProcessMessage(msg)
 
 export function SendMessage(msg)
 {
-    Client.serverWebsocket.send(msg);
+    if (Client.serverStatus === "con")
+    {
+        Client.serverWebsocket.send(msg);
+    }
+    else
+    {
+        //console.log("Tried to message the server but am not connected!");
+    }
 }
 
 export function OnlineSessionStart(side, stepTime, opponent, fieldString, currentTurn)
