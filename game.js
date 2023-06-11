@@ -476,7 +476,7 @@ Game.prototype.actionCapture = function()
 
     this.SetOccupation(this.GetOtherSide(), opposings[0], 0);
     this.SetOccupation(this.GetOtherSide(), opposings[1], 0);
-    //const wasInSowPit = this.GetOccupation(this.turn, this.sowPit);
+    const wasInSowPit = this.GetOccupation(this.turn, this.sowPit);
     this.DeltaOccupation(this.turn, this.sowPit, capturedAmount);
 
     this.normalCaptureMade = true;
@@ -501,7 +501,7 @@ Game.prototype.actionCapture = function()
         this.CreateTransfer(capturedFromFirst, this.GetOtherSide(), opposings[0], "hand", 0);
         this.CreateTransfer(capturedFromSecond, this.GetOtherSide(), opposings[1], "hand", 0);
 
-        this.SetOccupation(this.turn, this.sowPit, 0);
+        this.SetOccupation(this.turn, this.sowPit, wasInSowPit);
         this.SetOccupation("hand", 0, capturedAmount);
 
         this.ChooseSowPit();
