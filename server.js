@@ -6,7 +6,7 @@ const Sessions = require("./sessionInstance");
 const Messenger = require("./serverMessenger");
 const game = require("./game");
 
-const Server = new WebSocket.Server({port: process.env.PORT || 5000, clientTracking: true,});
+const Server = new WebSocket.Server({port: process.env.PORT || 80, clientTracking: true,});
 
 const ClientMap = [];
 
