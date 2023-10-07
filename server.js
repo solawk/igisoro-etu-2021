@@ -318,4 +318,3 @@ function LogDiscord(channelName, msg)
     if (!channel) console.log("Invalid channel name: " + channelName);
     channel.send(msg);
 }
-*/
